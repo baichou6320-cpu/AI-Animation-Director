@@ -17,6 +17,8 @@ Do not commit:
 
 The Jimeng-compatible execution layer must read credentials only from environment variables.
 
+GitHub publishing helpers also read tokens only from environment variables such as `GITHUB_TOKEN`.
+
 ## Reporting A Vulnerability
 
 Open a private security advisory if the repository is hosted on GitHub and advisories are enabled. Otherwise, contact the maintainer through the GitHub profile associated with the repository.

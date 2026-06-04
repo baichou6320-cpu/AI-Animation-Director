@@ -108,6 +108,8 @@ Skill package validation passed.
 powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1
 ```
 
+如果你有具备创建仓库权限的 `GITHUB_TOKEN`，也可以先运行 `scripts/create_github_repo.ps1` 创建空仓库。脚本只读取环境变量，不会保存 token。
+
 ## 发布文档
 
 - [竞品分析与项目差距](docs/competitive-analysis.md)

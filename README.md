@@ -101,6 +101,8 @@ After creating an empty GitHub repository, you can publish with:
 powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1
 ```
 
+If you have a `GITHUB_TOKEN` with repository creation permission, `scripts/create_github_repo.ps1` can create the empty repository first.
+
 ## Roadmap
 
 - More examples for ads, product videos, documentary style, stop motion, and English prompts.

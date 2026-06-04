@@ -25,6 +25,17 @@ Create a new GitHub repository:
 
 Use `docs/repository-metadata.md` for the repository description and topics.
 
+If you have a GitHub token with repository creation permission, you can create the repository from this workspace:
+
+```powershell
+$env:GITHUB_TOKEN = "your-token"
+powershell -ExecutionPolicy Bypass -File .\scripts\create_github_repo.ps1
+```
+
+The script does not store the token and never writes it to project files.
+
+For an organization repository, pass `-Owner your-org -UseOrg`.
+
 ## 2. Add Remote
 
 After creating the empty repository, run:
