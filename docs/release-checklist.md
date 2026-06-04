@@ -11,6 +11,7 @@ Use this before publishing the repository or creating a release tag.
 - [ ] `CHANGELOG.md` has an unreleased `0.1.0` entry.
 - [ ] `CONTRIBUTING.md` explains how to add examples and platform support.
 - [ ] GitHub Actions validation workflow is present.
+- [ ] GitHub issue and PR templates are present.
 
 ## Skill Package
 
@@ -47,6 +48,7 @@ Skill package validation passed.
 - [ ] Review ignored local scratch files.
 - [ ] Commit as `v0.1.0-prep` or similar.
 - [ ] Create GitHub repository.
+- [ ] Follow `docs/publish-to-github.md`.
 - [ ] Push default branch.
 - [ ] Confirm the validation workflow passes on GitHub.
 - [ ] Create first release only after README, examples, and validation are stable.

@@ -70,6 +70,8 @@ Research and release planning live in `docs/`.
 
 Detailed production workflow references live in `ai-animation-director/references/` and are loaded only when needed, keeping the Skill entrypoint lighter.
 
+Publishing instructions live in [docs/publish-to-github.md](docs/publish-to-github.md).
+
 ## Jimeng API Layer
 
 The script layer is experimental. In v0.1, the reliable default is prompt generation, not automatic media generation.
@@ -98,6 +100,10 @@ The same check is wired into GitHub Actions via `.github/workflows/validate.yml`
 - Stronger manifest validation.
 - Provider adapters for Jimeng-compatible APIs.
 - Optional export formats for shot tables and production manifests.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). GitHub issue templates are included for bugs, platform adapters, and example requests.
 
 ## License
 
