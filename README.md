@@ -74,6 +74,8 @@ Detailed production workflow references live in `ai-animation-director/reference
 
 Publishing instructions live in [docs/publish-to-github.md](docs/publish-to-github.md).
 
+Prioritized improvement work lives in [docs/improvement-backlog.md](docs/improvement-backlog.md).
+
 ## Jimeng API Layer
 
 The script layer is experimental. In v0.1, the reliable default is prompt generation, not automatic media generation.
@@ -110,6 +112,8 @@ If you have a `GITHUB_TOKEN` with repository creation permission, `scripts/creat
 - Stronger manifest validation.
 - Provider adapters for Jimeng-compatible APIs.
 - Optional export formats for shot tables and production manifests.
+
+See [docs/improvement-backlog.md](docs/improvement-backlog.md) for issue-ready priorities.
 
 ## Contributing
 

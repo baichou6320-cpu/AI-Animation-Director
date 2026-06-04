@@ -15,6 +15,7 @@ Use this before publishing the repository or creating a release tag.
 - [ ] GitHub Actions validation workflow is present.
 - [ ] GitHub issue and PR templates are present.
 - [ ] Repository metadata and release notes drafts are present in `docs/`.
+- [ ] `docs/improvement-backlog.md` lists post-release priorities.
 
 ## Skill Package
 
