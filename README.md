@@ -93,6 +93,12 @@ Run the static package check:
 .\scripts\validate_skill_package.ps1
 ```
 
+Cross-platform:
+
+```bash
+python scripts/validate_skill_package.py
+```
+
 This checks required Skill files, examples, copy-block references, and publish-risk files.
 
 The same check is wired into GitHub Actions via `.github/workflows/validate.yml`.

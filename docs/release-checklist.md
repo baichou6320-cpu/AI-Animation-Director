@@ -16,6 +16,7 @@ Use this before publishing the repository or creating a release tag.
 - [ ] GitHub issue and PR templates are present.
 - [ ] Repository metadata and release notes drafts are present in `docs/`.
 - [ ] `docs/improvement-backlog.md` lists post-release priorities.
+- [ ] Python and PowerShell validators are present.
 
 ## Skill Package
 
@@ -38,6 +39,12 @@ Run:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\validate_skill_package.ps1
+```
+
+And:
+
+```bash
+python scripts/validate_skill_package.py
 ```
 
 Expected:

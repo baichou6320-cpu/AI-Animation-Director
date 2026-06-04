@@ -6,12 +6,25 @@ on:
 
 jobs:
   validate:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate package
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Validate package with Python
+        run: python scripts/validate_skill_package.py
+
+      - name: Validate package with PowerShell
+        if: runner.os == 'Windows'
         shell: powershell
         run: .\scripts\validate_skill_package.ps1

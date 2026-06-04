@@ -96,6 +96,12 @@ ai-animation-director/
 powershell -ExecutionPolicy Bypass -File .\scripts\validate_skill_package.ps1
 ```
 
+跨平台校验：
+
+```bash
+python scripts/validate_skill_package.py
+```
+
 期望输出：
 
 ```text

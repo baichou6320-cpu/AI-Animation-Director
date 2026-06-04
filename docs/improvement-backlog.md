@@ -123,6 +123,10 @@ Acceptance:
 - GitHub Actions can run validation on Linux and Windows.
 - Local users without PowerShell can validate the package.
 
+Status:
+
+- Done in local project: Python validator and matrix CI have been added.
+
 ## P3 - Community And Presentation
 
 These are useful after the first release is stable.
