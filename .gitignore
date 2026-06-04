@@ -1,0 +1,36 @@
+# Secrets
+.env
+.env.*
+*.key
+*.pem
+*token*
+*cookie*
+*session*
+
+# Generated media and execution outputs
+ai-animation-director/outputs/**
+!ai-animation-director/outputs/.gitkeep
+*.mp4
+*.mov
+*.webm
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.wav
+*.mp3
+
+# Local scratch output
+pixel_ai_animation_package_jimeng.md
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

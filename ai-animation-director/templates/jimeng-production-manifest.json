@@ -1,0 +1,68 @@
+{
+  "project": {
+    "title": "雨夜星光",
+    "platform": "jimeng-general",
+    "aspect_ratio": "16:9",
+    "notes": "Template manifest for AI animation keyframe and video execution."
+  },
+  "tasks": [
+    {
+      "id": "img_character_robot",
+      "type": "image",
+      "prompt": "小机器人，矮小圆润胶囊体型，浅灰磨砂金属外壳，黑色玻璃面罩，两个白色圆眼，胸口中央暖黄色圆形小灯，短四肢，儿童般比例。正面、侧面、三分之二视角，干净背景，温暖幻想动画角色设定图，造型统一。",
+      "negative_prompt": "人类头发，复杂手指，胸灯位置变化，文字，水印，多余配件",
+      "input_images": [],
+      "duration_hint": "",
+      "aspect_ratio": "1:1",
+      "mode": "text-to-image",
+      "status": "pending",
+      "output_path": "images/img_character_robot.png",
+      "provider_task_id": "",
+      "notes": "Generate character reference first."
+    },
+    {
+      "id": "img_scene_alley",
+      "type": "image",
+      "prompt": "雨夜小巷，湿润地面和水洼，冷蓝灰环境光，远处暖黄色旧路灯，少量窗光，柔和雨线。空间结构清楚，地面有轻微反光，背景细节柔和不过度锐利，温暖幻想动画场景设定图，安静治愈，不恐怖。",
+      "negative_prompt": "霓虹广告牌，大量人群，白天，恐怖强对比，文字，水印",
+      "input_images": [],
+      "duration_hint": "",
+      "aspect_ratio": "16:9",
+      "mode": "text-to-image",
+      "status": "pending",
+      "output_path": "images/img_scene_alley.png",
+      "provider_task_id": "",
+      "notes": "Generate scene reference before shot keyframes."
+    },
+    {
+      "id": "img_shot_001",
+      "type": "image",
+      "prompt": "小机器人，矮小圆润胶囊体型，浅灰磨砂金属外壳，黑色玻璃面罩，两个白色圆眼，胸口中央暖黄色圆形小灯。雨夜小巷，湿润地面和水洼，冷蓝灰环境光，远处暖黄色路灯。机器人独自站在空街上抬头看无星夜空，远景，轻微高角度，胸灯发出微弱暖光，温暖幻想动画，安静孤独。",
+      "negative_prompt": "角色变形，胸灯变蓝，夜景过暗，霓虹杂乱，文字，水印，恐怖氛围",
+      "input_images": [],
+      "duration_hint": "",
+      "aspect_ratio": "16:9",
+      "mode": "text-to-image",
+      "status": "pending",
+      "output_path": "images/img_shot_001.png",
+      "provider_task_id": "",
+      "notes": "Opening keyframe."
+    },
+    {
+      "id": "vid_shot_001",
+      "type": "video_image",
+      "prompt": "从这张关键帧开始。小机器人缓慢抬头看向无星夜空，胸口暖黄色小灯轻微闪烁。镜头静止或极慢推进。雨夜小巷保持冷蓝灰环境光，湿润地面和水洼轻微反光，柔和雨线缓慢落下。保持机器人矮小圆润体型、黑色玻璃面罩、两个白色圆眼、胸灯位置不变。安静孤独，温暖幻想动画。",
+      "negative_prompt": "快速推镜，角色变形，胸灯变蓝，场景切换，霓虹街区，文字，水印",
+      "input_images": [
+        "images/img_shot_001.png"
+      ],
+      "duration_hint": "7s",
+      "aspect_ratio": "16:9",
+      "mode": "image-to-video",
+      "status": "pending",
+      "output_path": "videos/vid_shot_001.mp4",
+      "provider_task_id": "",
+      "notes": "If motion fails, keep camera locked and only animate rain/chest light."
+    }
+  ]
+}
