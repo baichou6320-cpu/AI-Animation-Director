@@ -1,5 +1,7 @@
 # AI Animation Director
 
+[中文说明](README.zh-CN.md)
+
 A Codex Skill that turns animation ideas into director-style, Jimeng-ready AI video prompt packages.
 
 中文定位：面向 AI 动画短片的导演型提示词 Skill，把一句想法变成可复制到即梦的生图、图生视频和分镜执行包。

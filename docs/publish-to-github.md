@@ -23,6 +23,8 @@ Create a new GitHub repository:
 - Visibility: public is recommended for an open-source Skill.
 - Do not initialize with README, license, or `.gitignore`; this local repository already has them.
 
+Use `docs/repository-metadata.md` for the repository description and topics.
+
 ## 2. Add Remote
 
 After creating the empty repository, run:
@@ -74,15 +76,7 @@ v0.1.0 - Prompt-only Skill with experimental Jimeng adapter
 
 Suggested release notes:
 
-```markdown
-Initial release of AI Animation Director.
-
-- Codex Skill for AI animation pre-production.
-- Quick Mode for Jimeng-ready short video execution packages.
-- Prompts Only mode for copy-first prompt output.
-- Modular prompt pipeline for story, director treatment, character/scene bible, shot list, image prompts, video prompts, routing, and output composition.
-- Experimental Jimeng-compatible manifest execution layer.
-```
+Use `docs/release-notes-v0.1.0.md`.
 
 ## If Remote Already Exists
 
