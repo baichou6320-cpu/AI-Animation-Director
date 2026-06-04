@@ -19,6 +19,7 @@ function Require-Dir($path) {
 Require-File (Join-Path $root "README.md")
 Require-File (Join-Path $root "README.zh-CN.md")
 Require-File (Join-Path $root "LICENSE")
+Require-File (Join-Path $root "SECURITY.md")
 Require-File (Join-Path $root ".gitignore")
 Require-File (Join-Path $root "docs/repository-metadata.md")
 Require-File (Join-Path $root "docs/release-notes-v0.1.0.md")

@@ -39,6 +39,12 @@ If you prefer SSH:
 git remote add origin git@github.com:baichou6320-cpu/ai-animation-director.git
 ```
 
+Alternatively, use the helper script:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1
+```
+
 ## 3. Push Main
 
 ```powershell
@@ -66,6 +72,12 @@ After checking the README, examples, and Actions result:
 ```powershell
 git tag v0.1.0
 git push origin v0.1.0
+```
+
+Or publish and tag in one command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1 -Tag v0.1.0
 ```
 
 Suggested release title:

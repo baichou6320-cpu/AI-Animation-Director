@@ -8,6 +8,7 @@ Use this before publishing the repository or creating a release tag.
 - [ ] `README.md` explains what the project does and what it does not do.
 - [ ] `README.zh-CN.md` is present for Chinese users.
 - [ ] `LICENSE` is present.
+- [ ] `SECURITY.md` explains secret handling and vulnerability reporting.
 - [ ] `.gitignore` excludes secrets, generated media, and execution outputs.
 - [ ] `CHANGELOG.md` has an unreleased `0.1.0` entry.
 - [ ] `CONTRIBUTING.md` explains how to add examples and platform support.

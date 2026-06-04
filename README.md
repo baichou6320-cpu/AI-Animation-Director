@@ -95,6 +95,12 @@ This checks required Skill files, examples, copy-block references, and publish-r
 
 The same check is wired into GitHub Actions via `.github/workflows/validate.yml`.
 
+After creating an empty GitHub repository, you can publish with:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1
+```
+
 ## Roadmap
 
 - More examples for ads, product videos, documentary style, stop motion, and English prompts.

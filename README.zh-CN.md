@@ -102,6 +102,12 @@ powershell -ExecutionPolicy Bypass -File .\scripts\validate_skill_package.ps1
 Skill package validation passed.
 ```
 
+创建空 GitHub 仓库后，可以用脚本发布：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1
+```
+
 ## 发布文档
 
 - [竞品分析与项目差距](docs/competitive-analysis.md)
