@@ -76,6 +76,8 @@ Publishing instructions live in [docs/publish-to-github.md](docs/publish-to-gith
 
 Prioritized improvement work lives in [docs/improvement-backlog.md](docs/improvement-backlog.md).
 
+Copy-ready GitHub issue drafts live in [docs/issue-seeds.md](docs/issue-seeds.md).
+
 ## Jimeng API Layer
 
 The script layer is experimental. In v0.1, the reliable default is prompt generation, not automatic media generation.

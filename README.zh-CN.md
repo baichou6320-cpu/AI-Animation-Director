@@ -123,6 +123,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1
 - [发布检查清单](docs/release-checklist.md)
 - [发布到 GitHub 操作步骤](docs/publish-to-github.md)
 - [优先级改进 backlog](docs/improvement-backlog.md)
+- [GitHub issue 种子](docs/issue-seeds.md)
 
 ## 许可证
 

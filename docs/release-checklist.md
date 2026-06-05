@@ -4,7 +4,7 @@ Use this before publishing the repository or creating a release tag.
 
 ## Repository Basics
 
-- [ ] Repository has a clear name: `ai-animation-director`.
+- [ ] Repository has a clear name: `AI-Animation-Director`.
 - [ ] `README.md` explains what the project does and what it does not do.
 - [ ] `README.zh-CN.md` is present for Chinese users.
 - [ ] `LICENSE` is present.
@@ -16,6 +16,7 @@ Use this before publishing the repository or creating a release tag.
 - [ ] GitHub issue and PR templates are present.
 - [ ] Repository metadata and release notes drafts are present in `docs/`.
 - [ ] `docs/improvement-backlog.md` lists post-release priorities.
+- [ ] `docs/issue-seeds.md` contains copy-ready GitHub issue drafts.
 - [ ] Python and PowerShell validators are present.
 
 ## Skill Package

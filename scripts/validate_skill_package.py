@@ -18,6 +18,7 @@ REQUIRED_FILES = [
     ROOT / "docs/repository-metadata.md",
     ROOT / "docs/release-notes-v0.1.0.md",
     ROOT / "docs/improvement-backlog.md",
+    ROOT / "docs/issue-seeds.md",
     ROOT / "scripts/create_github_repo.ps1",
     ROOT / "scripts/publish_to_github.ps1",
     SKILL / "SKILL.md",

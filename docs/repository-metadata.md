@@ -5,7 +5,7 @@ Use these values when creating or editing the GitHub repository.
 ## Repository Name
 
 ```text
-ai-animation-director
+AI-Animation-Director
 ```
 
 ## Short Description

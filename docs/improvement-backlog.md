@@ -2,13 +2,15 @@
 
 This backlog converts the competitive analysis into concrete work items. It is ordered for a small open-source Skill project, not a full AI video platform.
 
+For copy-ready GitHub issue drafts, see `docs/issue-seeds.md`.
+
 ## P0 - GitHub Launch Readiness
 
 These items should be complete before announcing the repository widely.
 
 ### P0.1 Confirm Remote Repository
 
-- Create or verify `baichou6320-cpu/ai-animation-director`.
+- Create or verify `baichou6320-cpu/AI-Animation-Director`.
 - Push `main`.
 - Confirm GitHub Actions runs `Validate Skill Package`.
 - Add repository topics from `docs/repository-metadata.md`.

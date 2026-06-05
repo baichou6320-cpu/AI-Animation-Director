@@ -1,5 +1,5 @@
 param(
-    [string]$Repository = "baichou6320-cpu/ai-animation-director",
+    [string]$Repository = "baichou6320-cpu/AI-Animation-Director",
     [string]$RemoteName = "origin",
     [string]$Branch = "main",
     [string]$Tag = "",

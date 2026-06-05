@@ -3,13 +3,13 @@
 This repository is prepared locally. The recommended GitHub repository name is:
 
 ```text
-ai-animation-director
+AI-Animation-Director
 ```
 
 Recommended full name, based on the current git user config:
 
 ```text
-baichou6320-cpu/ai-animation-director
+baichou6320-cpu/AI-Animation-Director
 ```
 
 At the time of preparation, this repository did not exist on GitHub yet.
@@ -19,7 +19,7 @@ At the time of preparation, this repository did not exist on GitHub yet.
 Create a new GitHub repository:
 
 - Owner: `baichou6320-cpu`
-- Repository name: `ai-animation-director`
+- Repository name: `AI-Animation-Director`
 - Visibility: public is recommended for an open-source Skill.
 - Do not initialize with README, license, or `.gitignore`; this local repository already has them.
 
@@ -41,13 +41,13 @@ For an organization repository, pass `-Owner your-org -UseOrg`.
 After creating the empty repository, run:
 
 ```powershell
-git remote add origin https://github.com/baichou6320-cpu/ai-animation-director.git
+git remote add origin https://github.com/baichou6320-cpu/AI-Animation-Director.git
 ```
 
 If you prefer SSH:
 
 ```powershell
-git remote add origin git@github.com:baichou6320-cpu/ai-animation-director.git
+git remote add origin git@github.com:baichou6320-cpu/AI-Animation-Director.git
 ```
 
 Alternatively, use the helper script:
@@ -112,5 +112,5 @@ git remote -v
 Then update it if needed:
 
 ```powershell
-git remote set-url origin https://github.com/baichou6320-cpu/ai-animation-director.git
+git remote set-url origin https://github.com/baichou6320-cpu/AI-Animation-Director.git
 ```

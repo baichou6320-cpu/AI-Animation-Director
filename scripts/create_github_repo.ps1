@@ -1,6 +1,6 @@
 param(
     [string]$Owner = "baichou6320-cpu",
-    [string]$Name = "ai-animation-director",
+    [string]$Name = "AI-Animation-Director",
     [string]$Description = "Codex Skill for AI animation pre-production and Jimeng-ready prompt execution packages.",
     [string[]]$Topics = @(
         "codex-skill",
