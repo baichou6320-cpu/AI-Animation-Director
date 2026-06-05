@@ -1,132 +1,346 @@
+<div align="center">
+
 # AI Animation Director
 
-[中文说明](README.zh-CN.md)
+### Turn one animation idea into a production-ready AI video prompt package
 
-A Codex Skill that turns animation ideas into director-style, Jimeng-ready AI video prompt packages.
+Director treatment, story structure, character consistency, shot design, image prompts,
+video prompts, Jimeng adaptation, and production QA in one composable Codex Skill.
 
-中文定位：面向 AI 动画短片的导演型提示词 Skill，把一句想法变成可复制到即梦的生图、图生视频和分镜执行包。
+[![Release](https://img.shields.io/github/v/release/baichou6320-cpu/AI-Animation-Director?style=flat-square&color=2f81f7)](https://github.com/baichou6320-cpu/AI-Animation-Director/releases)
+[![Validation](https://img.shields.io/github/actions/workflow/status/baichou6320-cpu/AI-Animation-Director/validate.yml?branch=main&style=flat-square&label=validation)](https://github.com/baichou6320-cpu/AI-Animation-Director/actions/workflows/validate.yml)
+[![License](https://img.shields.io/github/license/baichou6320-cpu/AI-Animation-Director?style=flat-square)](LICENSE)
+[![Codex Skill](https://img.shields.io/badge/Codex-Skill-111827?style=flat-square)](ai-animation-director/SKILL.md)
+[![Jimeng Ready](https://img.shields.io/badge/Jimeng-prompt%20ready-f97316?style=flat-square)](ai-animation-director/prompts/platform_adapter.md)
 
-## Why
+[简体中文](README.zh-CN.md) · [Quick Start](#quick-start) · [Example](#example-output) · [Architecture](#architecture) · [Roadmap](#roadmap)
 
-AI 视频短片常见失败点不是“没有提示词”，而是：
+</div>
 
-- 角色和场景漂移。
-- 镜头动作太复杂。
-- 风格描述太虚。
-- 生图提示词和视频提示词脱节。
-- 用户拿到长文档后不知道先复制哪一条。
+---
 
-This Skill solves that by using an internal animation production workflow, then compressing the result into a copy-first execution package.
+## What is AI Animation Director?
 
-## What It Produces
+**AI Animation Director** is a Codex Skill for AI animation pre-production. It transforms a short idea, script, character concept, visual reference, or advertisement brief into an executable animation production package.
 
-- `Prompts Only`: only anchors, image prompts, video prompts, and fixes.
-- `Quick Mode`: default for 5-30 second Jimeng shorts with 3-6 shots.
-- `Standard Mode`: for 30-90 second short-film packages.
-- `Full Mode`: for complete production packages and team handoff.
+Instead of returning one overloaded prompt, it works like a small virtual animation team:
 
-For Jimeng-style short videos, output blocks use stable IDs:
+- a **producer** clarifies scope, duration, audience, platform, and deliverables;
+- a **director** defines emotion, visual grammar, camera rules, performance, and rhythm;
+- a **writer** turns the concept into a closed dramatic structure;
+- a **design lead** locks character and scene consistency anchors;
+- a **storyboard artist** breaks the story into feasible shots;
+- a **prompt engineer** writes separate image and video prompts;
+- a **QA reviewer** detects drift, overloaded motion, continuity risks, and model limitations.
 
-- `IMG-REF`: reference image prompt.
-- `IMG-S01`: shot 1 keyframe prompt.
-- `VID-S01`: shot 1 video prompt, using `IMG-S01`.
+The internal process can be detailed. The user-facing result stays compact, copyable, and ready to test.
 
-## Quick Start
+> [!IMPORTANT]
+> Version `v0.1.x` is primarily a **prompt and production-planning Skill**. It does not generate media by itself. The Jimeng-compatible API runner is experimental and requires provider-specific credentials and endpoint details.
 
-1. Copy `ai-animation-director/` into your Codex skills directory.
+## Why this project?
 
-   Windows example:
+AI video projects often fail even when individual prompts look good.
 
-   ```powershell
-   Copy-Item -Recurse .\ai-animation-director "$env:USERPROFILE\.codex\skills\ai-animation-director"
-   ```
+| Common failure | How the Skill responds |
+| --- | --- |
+| Characters change between shots | Builds reusable character, costume, prop, and scene anchors |
+| A shot contains too many actions | Limits each shot to one primary subject action and one camera action |
+| "Cinematic" or "premium" is too vague | Translates adjectives into framing, palette, lighting, material, and pacing rules |
+| Image and video prompts do not connect | Pairs every `VID-Sxx` block with a corresponding `IMG-Sxx` keyframe |
+| The output is too long to use | Routes short projects into Quick Mode or Prompts Only |
+| A model cannot execute the intended motion | Adds difficulty labels and a simpler fallback for each risky shot |
+| Style references are too derivative | Converts references into generic visual traits instead of copying protected styles |
 
-2. Ask Codex to use the Skill:
+## What you get
 
-   ```text
-   用 ai-animation-director 生成一个像素风动画，10 秒，3 个镜头，用即梦。
-   ```
+Depending on the request, the Skill can produce:
 
-3. Copy the generated `IMG-*` prompts into Jimeng image generation, then use the corresponding `VID-*` prompts for image-to-video generation.
+- project brief and creative constraints;
+- director treatment and visual grammar;
+- short-film story structure, action lines, narration, and dialogue;
+- character and environment consistency anchors;
+- shot list with duration, framing, camera movement, action, transition, and difficulty;
+- keyframe and reference-image prompts;
+- image-to-video or text-to-video prompts;
+- Jimeng-oriented copy blocks;
+- lightweight music, ambience, and sound-effect direction;
+- production risks, fallback shots, and final QA checks.
 
-## Examples
+### Four output modes
 
-- [10 秒像素风即梦执行包](ai-animation-director/examples/pixel-10s-3shots-jimeng.md)
-- [30 秒国风水墨即梦执行包](ai-animation-director/examples/ink-30s-3shots-jimeng.md)
-- [只要即梦提示词](ai-animation-director/examples/prompts-only-jimeng.md)
+| Mode | Best for | Visible output |
+| --- | --- | --- |
+| **Prompts Only** | "Just give me Jimeng prompts" | Global anchors, image prompts, video prompts, critical fixes |
+| **Quick Mode** | 5-30 seconds, usually 3-6 shots | One-line concept, anchors, shot table, copy blocks, execution order |
+| **Standard Mode** | 30-90 second shorts | Brief, concise treatment, story, bible anchors, full shot prompts |
+| **Full Mode** | Complete package or team handoff | Full pre-production package with handoff notes and QA |
 
-## Project Structure
+For Jimeng shorts under 30 seconds and 6 shots, **Quick Mode is the default**.
 
-```text
-ai-animation-director/
-  SKILL.md
-  agents/
-  prompts/
-  references/
-  templates/
-  examples/
-  scripts/
+## Quick start
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/baichou6320-cpu/AI-Animation-Director.git
+cd AI-Animation-Director
 ```
 
-Research and release planning live in `docs/`.
+### 2. Install the Skill
 
-Detailed production workflow references live in `ai-animation-director/references/` and are loaded only when needed, keeping the Skill entrypoint lighter.
+Copy only the `ai-animation-director` directory into your Codex skills directory.
 
-Publishing instructions live in [docs/publish-to-github.md](docs/publish-to-github.md).
-
-Prioritized improvement work lives in [docs/improvement-backlog.md](docs/improvement-backlog.md).
-
-Copy-ready GitHub issue drafts live in [docs/issue-seeds.md](docs/issue-seeds.md).
-
-## Jimeng API Layer
-
-The script layer is experimental. In v0.1, the reliable default is prompt generation, not automatic media generation.
-
-- Credentials must come from environment variables.
-- Do not commit API keys, cookies, session tokens, or account credentials.
-- Exact provider endpoints and signing rules may need official Jimeng/Volcano account documentation.
-- Web UI automation is not the default v0.1 path.
-
-## Validate
-
-Run the static package check:
+**Windows PowerShell**
 
 ```powershell
-.\scripts\validate_skill_package.ps1
+Copy-Item -Recurse -Force `
+  .\ai-animation-director `
+  "$env:USERPROFILE\.codex\skills\ai-animation-director"
 ```
 
-Cross-platform:
+**macOS / Linux**
+
+```bash
+mkdir -p ~/.codex/skills
+cp -R ./ai-animation-director ~/.codex/skills/ai-animation-director
+```
+
+Restart or open a new Codex session after installation.
+
+### 3. Ask for an animation package
+
+```text
+Use $ai-animation-director to create a 10-second pixel-art animation
+for Jimeng with exactly 3 shots. Keep the character consistent and
+give me copy-ready image and video prompts.
+```
+
+Chinese requests work directly:
+
+```text
+使用 $ai-animation-director，帮我做一个 10 秒、3 个镜头的像素风动画，
+用于即梦。只输出能直接复制使用的生图和图生视频提示词。
+```
+
+### 4. Execute in order
+
+```text
+IMG-REF  -> generate the character/environment reference
+IMG-S01  -> generate shot 1 keyframe
+VID-S01  -> animate IMG-S01
+IMG-S02  -> generate shot 2 keyframe
+VID-S02  -> animate IMG-S02
+...
+```
+
+The stable IDs make it obvious which image belongs to which video prompt.
+
+## Example output
+
+Input:
+
+```text
+10-second pixel-art animation, 3 shots, for Jimeng:
+a small mushroom helps a firefly recover its light after the rain.
+```
+
+The Skill compresses the production plan into a package like this:
+
+```markdown
+# 10-second Pixel-Art Jimeng Package
+
+## Global anchors
+- Character: round mushroom, red cap with exactly 3 cream spots...
+- Scene: post-rain forest, moss, broad leaves, blue-violet night...
+- Style: retro pixel art, low-resolution game frame, crisp pixel edges...
+- Avoid: realistic insects, 3D toy look, text, watermark, character drift.
+
+## Shot plan
+| Shot | Time | Image | Motion |
+| --- | --- | --- | --- |
+| S01 | 3s | Mushroom notices the dim firefly | Looks up; tail light flickers |
+| S02 | 3s | Mushroom offers a dew drop | Firefly moves closer |
+| S03 | 4s | Warm light fills the forest | Light brightens; mushroom blinks |
+
+## IMG-S01
+Copy prompt: ...
+
+## VID-S01
+Use image: IMG-S01
+Copy prompt: ...
+Fallback: lock the camera and animate only the tail light.
+```
+
+See the complete, final-format examples:
+
+- [10-second pixel-art Jimeng package](ai-animation-director/examples/pixel-10s-3shots-jimeng.md)
+- [30-second Chinese ink Jimeng package](ai-animation-director/examples/ink-30s-3shots-jimeng.md)
+- [Jimeng prompts-only package](ai-animation-director/examples/prompts-only-jimeng.md)
+
+## Production workflow
+
+The Skill follows a real animation pre-production path, while using a shared `Project Packet` to pass decisions between specialist modules.
+
+```mermaid
+flowchart LR
+    A["Idea / Script / Brief"] --> B["Intake"]
+    B --> C["Project Brief"]
+    C --> D["Director Treatment"]
+    D --> E["Story"]
+    E --> F["Character & Scene Bible"]
+    F --> G["Shot List"]
+    G --> H["Image Prompts"]
+    H --> I["Video Prompts"]
+    I --> J["Platform Adapter"]
+    J --> K["QA Review"]
+    K --> L["Output Router"]
+    L --> M["Copy-ready Package"]
+```
+
+Each stage receives upstream constraints and hands explicit requirements to the next stage. A director's camera rules reach the shot list; character anchors reach every image prompt; shot motion limits reach every video prompt.
+
+## Architecture
+
+```text
+AI-Animation-Director/
+├── ai-animation-director/
+│   ├── SKILL.md                 # Skill entrypoint and orchestration
+│   ├── agents/openai.yaml       # Codex UI metadata
+│   ├── prompts/                 # Specialist production modules
+│   ├── references/              # Styles, shot language, workflow, QA
+│   ├── templates/               # Quick package and manifest templates
+│   ├── examples/                # Final user-facing examples
+│   ├── scripts/                 # Experimental execution layer
+│   └── outputs/                 # Generated local media/manifests
+├── docs/                        # Research, release, and roadmap notes
+├── scripts/                     # Repository validation and publishing
+└── .github/                     # CI and contribution templates
+```
+
+### Prompt pipeline
+
+| Module | Responsibility |
+| --- | --- |
+| `intake.md` | Extract hard constraints, defaults, assumptions, and open questions |
+| `project_brief_builder.md` | Convert an idea into a manageable production brief |
+| `director_treatment_builder.md` | Define emotional intent, camera rules, light, color, and rhythm |
+| `story_builder.md` | Build or adapt a closed short-film narrative |
+| `character_scene_bible_builder.md` | Lock visual consistency across shots |
+| `shotlist_builder.md` | Design feasible shots with fallback options |
+| `image_prompt_builder.md` | Create reference and keyframe prompts |
+| `video_prompt_builder.md` | Create motion-focused video prompts |
+| `platform_adapter.md` | Adapt natural-language prompts for Jimeng or other platforms |
+| `quick_package_router.md` | Select Prompts Only, Quick, Standard, or Full mode |
+| `output_composer.md` | Compress internal work into the final deliverable |
+| `sound_builder.md` | Add low-priority music and sound direction |
+
+Detailed references are loaded only when needed, keeping `SKILL.md` focused and reducing unnecessary context.
+
+## Supported workflows
+
+| Workflow | Status |
+| --- | --- |
+| Generic AI image and video prompts | Supported |
+| Jimeng short-video prompt package | Supported |
+| Image-to-video shot workflow | Supported |
+| Text-to-video planning | Supported |
+| First/last-frame planning | Supported as natural-language guidance |
+| English prompt output | Supported on request |
+| Jimeng-compatible manifest dry run | Experimental |
+| Live Jimeng API submission | Provider details required |
+| Automatic web UI operation | Not included in v0.1 |
+
+Platform parameters change frequently. The Skill avoids inventing unsupported model names, IDs, switches, or signing rules.
+
+## Experimental Jimeng execution layer
+
+The repository includes an adapter-shaped runner:
+
+```bash
+python ai-animation-director/scripts/jimeng_execute.py \
+  --manifest ai-animation-director/outputs/project/manifest.json \
+  --out ai-animation-director/outputs/project \
+  --dry-run
+```
+
+Supported manifest task types:
+
+- `image`
+- `video_text`
+- `video_image`
+- `video_first_last_frame`
+
+Before using live execution, read [Jimeng API integration notes](ai-animation-director/references/jimeng-api.md).
+
+Credentials must be provided through environment variables. Never commit API keys, cookies, passwords, or session tokens.
+
+## Validation
+
+Run the package validator before committing changes.
+
+**Windows**
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\validate_skill_package.ps1
+```
+
+**Cross-platform**
 
 ```bash
 python scripts/validate_skill_package.py
 ```
 
-This checks required Skill files, examples, copy-block references, and publish-risk files.
+Expected result:
 
-The same check is wired into GitHub Actions via `.github/workflows/validate.yml`.
-
-After creating an empty GitHub repository, you can publish with:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1
+```text
+Skill package validation passed.
 ```
 
-If you have a `GITHUB_TOKEN` with repository creation permission, `scripts/create_github_repo.ps1` can create the empty repository first.
+GitHub Actions runs the same checks on both Ubuntu and Windows.
+
+## Design principles
+
+1. **Production logic before prompt decoration.**
+2. **Consistency anchors before per-shot prompts.**
+3. **One primary action and one camera action per shot.**
+4. **Image prompts and video prompts remain separate.**
+5. **Short requests produce short, copy-first outputs.**
+6. **Every difficult shot receives a simpler fallback.**
+7. **Style references are translated into generic visual traits.**
+8. **Sound supports the picture and never dominates the workflow.**
 
 ## Roadmap
 
-- More examples for ads, product videos, documentary style, stop motion, and English prompts.
-- Smaller `SKILL.md` with more details moved into references.
-- Stronger manifest validation.
-- Provider adapters for Jimeng-compatible APIs.
-- Optional export formats for shot tables and production manifests.
+- More final-format examples for product ads, stop motion, documentary realism, and English output.
+- Stronger static checks for routing rules and copy-block integrity.
+- CSV and JSON shot-list exports.
+- Provider-specific adapters backed by official API documentation.
+- Social preview artwork and a compact demo animation.
+- Additional platform guides for verified AI image/video tools.
 
-See [docs/improvement-backlog.md](docs/improvement-backlog.md) for issue-ready priorities.
+See the [prioritized improvement backlog](docs/improvement-backlog.md) for issue-ready tasks.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). GitHub issue templates are included for bugs, platform adapters, and example requests.
+Bug reports, platform research, prompt examples, and workflow improvements are welcome.
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a pull request. The repository includes templates for bugs, platform adapters, and example requests.
+
+## Security
+
+Do not include account credentials or generated private media in issues, logs, manifests, or commits. See [SECURITY.md](SECURITY.md) for reporting guidance.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+Released under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
+
+Built for creators who want AI animation prompts to behave like a production plan, not a lottery ticket.
+
+[Back to top](#ai-animation-director)
+
+</div>

@@ -1,130 +1,360 @@
+<div align="center">
+
 # AI Animation Director
 
-AI Animation Director 是一个 Codex Skill，用导演、编剧、分镜和提示词工程的方式，把一句动画想法变成可复制到即梦的短片执行包。
+### 把一句动画想法，变成真正可执行的 AI 动画制作方案
 
-> 第一版重点是“生成可用提示词和制作包”，不是直接生成图片、视频或音乐。
+导演方案、故事结构、角色一致性、分镜设计、生图提示词、视频提示词、
+即梦适配与制作质检，整合在一个可组合的 Codex Skill 中。
 
-## 解决什么问题
+[![Release](https://img.shields.io/github/v/release/baichou6320-cpu/AI-Animation-Director?style=flat-square&color=2f81f7)](https://github.com/baichou6320-cpu/AI-Animation-Director/releases)
+[![Validation](https://img.shields.io/github/actions/workflow/status/baichou6320-cpu/AI-Animation-Director/validate.yml?branch=main&style=flat-square&label=validation)](https://github.com/baichou6320-cpu/AI-Animation-Director/actions/workflows/validate.yml)
+[![License](https://img.shields.io/github/license/baichou6320-cpu/AI-Animation-Director?style=flat-square)](LICENSE)
+[![Codex Skill](https://img.shields.io/badge/Codex-Skill-111827?style=flat-square)](ai-animation-director/SKILL.md)
+[![Jimeng Ready](https://img.shields.io/badge/即梦-提示词适配-f97316?style=flat-square)](ai-animation-director/prompts/platform_adapter.md)
 
-AI 视频短片常见失败点通常不是没有提示词，而是：
+[English](README.md) · [快速开始](#快速开始) · [完整示例](#完整示例) · [项目架构](#项目架构) · [路线图](#路线图)
 
-- 角色和场景容易漂移。
-- 镜头动作写得太复杂，模型生成不了。
-- 风格描述太虚，结果不可控。
-- 生图提示词和视频提示词脱节。
-- 输出文档太长，用户不知道先复制哪一条。
+</div>
 
-本 Skill 的思路是：内部按真实动画短片制作流程思考，外部默认输出轻量、可复制、可试错的即梦执行包。
+---
 
-## 输出模式
+## 这是什么？
 
-- `Prompts Only`：只输出全局锚点、生图提示词、视频提示词和失败修正。
-- `Quick Mode`：默认模式，适合 5-30 秒、3-6 镜头的即梦短片。
-- `Standard Mode`：适合 30-90 秒短片，保留简短项目说明和完整镜头提示词。
-- `Full Mode`：用户明确要求完整制作包、详细方案或团队交接时才使用。
+**AI Animation Director** 是一个面向 AI 动画前期制作的 Codex Skill。它可以把一句创意、已有剧本、角色设定、视觉参考或广告需求，转化为一套可以直接执行的动画短片制作包。
 
-即梦短片会使用稳定复制块编号：
+它不会只返回一条堆满关键词的提示词，而是像一个小型动画制作团队一样协作：
 
-- `IMG-REF`：角色/场景参考图。
-- `IMG-S01`：第 1 个镜头首帧。
-- `VID-S01`：第 1 个镜头视频提示词，使用 `IMG-S01`。
+- **制片 / PM**：确认片长、画幅、受众、平台、用途和交付范围；
+- **导演**：确定情绪、视觉语法、镜头规则、表演方式和节奏；
+- **编剧**：把概念整理成闭合的短片结构；
+- **美术设定**：锁定角色、服装、道具和场景一致性；
+- **分镜师**：把故事拆成模型能够完成的镜头；
+- **提示词工程师**：分别生成生图与视频提示词；
+- **质检人员**：检查角色漂移、动作过载、连续性和平台限制。
+
+内部可以按照完整影视流程思考，但最终交付给用户的内容会被压缩成简洁、可复制、可试错的执行包。
+
+> [!IMPORTANT]
+> `v0.1.x` 的稳定能力是**提示词生成与动画前期规划**，不会自动生成图片、视频或音乐。仓库中的即梦兼容 API 执行脚本仍处于实验阶段，需要用户提供合法的服务商凭证和接口细节。
+
+## 为什么需要它？
+
+AI 视频项目失败，很多时候并不是因为单条提示词写得不好，而是因为缺少完整的镜头和生产逻辑。
+
+| 常见问题 | Skill 的解决方式 |
+| --- | --- |
+| 同一角色每个镜头都不一样 | 建立角色、服装、道具和场景一致性锚点 |
+| 一个镜头里同时发生太多动作 | 每镜头限制一个主体动作和一个摄影机动作 |
+| “电影感”“高级感”太抽象 | 转译为构图、色彩、灯光、材质、景别和节奏规则 |
+| 生图提示词与视频提示词脱节 | 每个 `VID-Sxx` 强制引用对应的 `IMG-Sxx` |
+| 输出太长，不知道先复制什么 | 自动路由到 Quick Mode 或 Prompts Only |
+| 视频模型无法完成复杂运动 | 为高风险镜头提供固定机位、减少动作等降级方案 |
+| 风格参考容易过度模仿 | 把参考转译为通用视觉特征，不直接复刻受保护风格 |
+
+## 能生成什么？
+
+根据用户需求，Skill 可以输出：
+
+- 项目简报与制作约束；
+- 导演阐述和统一视觉语言；
+- 故事结构、动作线、旁白与台词；
+- 角色、场景、道具一致性锚点；
+- 包含时长、景别、机位、运动、转场和难度的镜头表；
+- 角色参考图、场景图和逐镜头关键帧提示词；
+- 文生视频、图生视频或首尾帧视频提示词；
+- 面向即梦的稳定复制块；
+- 简洁的配乐、环境声和关键音效方向；
+- 风险清单、失败修正和最终制作检查。
+
+### 四种输出模式
+
+| 模式 | 适用场景 | 用户会看到什么 |
+| --- | --- | --- |
+| **Prompts Only** | “只要即梦提示词” | 全局锚点、生图提示词、视频提示词、关键修正 |
+| **Quick Mode** | 5-30 秒，通常 3-6 个镜头 | 一句话设定、镜头表、复制区、生成顺序 |
+| **Standard Mode** | 30-90 秒动画短片 | 简报、导演方向、故事、设定锚点、完整镜头提示词 |
+| **Full Mode** | 完整制作包或团队交接 | 全量前期制作文档、模块交接说明和质检 |
+
+对于 **30 秒以内、6 镜以内的即梦短片**，默认进入 Quick Mode。
 
 ## 快速开始
 
-1. 把 `ai-animation-director/` 复制到 Codex skills 目录。
+### 1. 克隆仓库
 
-   Windows 示例：
+```bash
+git clone https://github.com/baichou6320-cpu/AI-Animation-Director.git
+cd AI-Animation-Director
+```
 
-   ```powershell
-   Copy-Item -Recurse .\ai-animation-director "$env:USERPROFILE\.codex\skills\ai-animation-director"
-   ```
+### 2. 安装 Skill
 
-2. 在 Codex 中使用：
+只需要把 `ai-animation-director` 文件夹复制到 Codex 的 skills 目录。
 
-   ```text
-   用 ai-animation-director 生成一个像素风动画，10 秒，3 个镜头，用即梦。
-   ```
+**Windows PowerShell**
 
-3. 按输出顺序复制：
+```powershell
+Copy-Item -Recurse -Force `
+  .\ai-animation-director `
+  "$env:USERPROFILE\.codex\skills\ai-animation-director"
+```
 
-   - 先复制 `IMG-REF` 生成参考图。
-   - 再复制 `IMG-S01`、`IMG-S02`、`IMG-S03` 生成首帧。
-   - 最后用对应首帧复制 `VID-S01`、`VID-S02`、`VID-S03` 做图生视频。
+**macOS / Linux**
 
-## 示例
+```bash
+mkdir -p ~/.codex/skills
+cp -R ./ai-animation-director ~/.codex/skills/ai-animation-director
+```
+
+安装后重新打开一个 Codex 会话。
+
+### 3. 发出请求
+
+```text
+使用 $ai-animation-director，帮我制作一个 10 秒、3 个镜头的像素风动画，
+用于即梦。保持角色一致，只输出可以直接复制的生图和图生视频提示词。
+```
+
+也可以从非常模糊的想法开始：
+
+```text
+使用 $ai-animation-director：
+一只小机器人在雨夜寻找星星，温暖、安静，做成 30 秒动画。
+```
+
+或者直接提供现有剧本：
+
+```text
+使用 $ai-animation-director，把下面的剧本改成 6 镜头分镜。
+不要改写核心剧情，为每个镜头生成首帧和图生视频提示词。
+```
+
+### 4. 按编号执行
+
+```text
+IMG-REF  -> 生成角色 / 场景参考图
+IMG-S01  -> 生成镜头 1 首帧
+VID-S01  -> 使用 IMG-S01 做图生视频
+IMG-S02  -> 生成镜头 2 首帧
+VID-S02  -> 使用 IMG-S02 做图生视频
+...
+```
+
+稳定编号让用户不需要在长文档里寻找“下一步到底复制哪一条”。
+
+## 输出长什么样？
+
+用户输入：
+
+```text
+10 秒像素风动画，3 个镜头，用即梦：
+雨后森林里，小蘑菇帮助一只尾灯变暗的萤火虫重新发光。
+```
+
+Skill 会把完整制作思考压缩成下面这种执行包：
+
+```markdown
+# 10 秒像素风即梦执行包
+
+## 全局锚点
+- 角色：矮圆小蘑菇，红色伞帽固定 3 个奶白圆点……
+- 场景：雨后森林，苔藓、宽叶、蓝紫夜色……
+- 风格：复古像素风，低分辨率游戏画面，清晰像素边缘……
+- 避免：写实昆虫、3D 玩具、文字、水印、角色漂移。
+
+## 镜头表
+| 镜头 | 时长 | 画面 | 动作 |
+| --- | --- | --- | --- |
+| S01 | 3s | 小蘑菇发现微弱的萤火虫 | 抬头，尾灯轻闪 |
+| S02 | 3s | 小蘑菇递出一滴露水 | 萤火虫慢慢靠近 |
+| S03 | 4s | 暖光照亮小森林 | 光晕变亮，小蘑菇眨眼 |
+
+## IMG-S01
+复制提示词：……
+
+## VID-S01
+使用图片：IMG-S01
+复制提示词：……
+失败后改法：固定镜头，只保留尾灯轻微闪烁。
+```
+
+## 完整示例
+
+仓库内的样例全部使用最终用户可见格式，不包含内部推理：
 
 - [10 秒像素风即梦执行包](ai-animation-director/examples/pixel-10s-3shots-jimeng.md)
 - [30 秒国风水墨即梦执行包](ai-animation-director/examples/ink-30s-3shots-jimeng.md)
 - [只要即梦提示词](ai-animation-director/examples/prompts-only-jimeng.md)
 
-## 项目结构
+## 从想法到成片的路径
 
-```text
-ai-animation-director/
-  SKILL.md
-  agents/
-  prompts/
-  references/
-  templates/
-  examples/
-  scripts/
+Skill 参考真实动画短片的前期生产流程，并通过统一的 `Project Packet` 在不同专业模块之间传递约束。
+
+```mermaid
+flowchart LR
+    A["想法 / 剧本 / 需求"] --> B["需求整理"]
+    B --> C["项目简报"]
+    C --> D["导演方案"]
+    D --> E["故事结构"]
+    E --> F["角色与场景圣经"]
+    F --> G["分镜镜头表"]
+    G --> H["生图提示词"]
+    H --> I["视频提示词"]
+    I --> J["平台适配"]
+    J --> K["制作质检"]
+    K --> L["输出模式路由"]
+    L --> M["可复制执行包"]
 ```
 
-- `SKILL.md`：Skill 入口和调度规则。
-- `prompts/`：分阶段提示词模块。
-- `references/`：按需读取的风格、镜头语言、工作流和检查清单。
-- `templates/`：即梦执行包和 manifest 模板。
-- `examples/`：最终输出格式样例。
-- `scripts/`：实验性即梦兼容执行层。
+每个阶段都会接收上游的确定信息，并把明确要求交给下一环节：
 
-## 即梦 API 层说明
+- 导演确定的镜头规则会传递给分镜；
+- 编剧确定的情绪节点会传递给镜头设计；
+- 角色锚点会进入每一条生图提示词；
+- 镜头动作限制会进入每一条视频提示词；
+- 质检发现不可执行时，只做最小修正，不推翻整个项目。
 
-`scripts/jimeng_execute.py` 是实验性执行层。v0.1 的稳定能力是生成提示词和制作包，不承诺直接自动生成图片/视频。
+## 项目架构
 
-安全边界：
+```text
+AI-Animation-Director/
+├── ai-animation-director/
+│   ├── SKILL.md                 # Skill 入口、调度与交付规则
+│   ├── agents/openai.yaml       # Codex 界面元数据
+│   ├── prompts/                 # 动画制作岗位模块
+│   ├── references/              # 风格、镜头语言、工作流与质检知识库
+│   ├── templates/               # 即梦短包与任务 manifest 模板
+│   ├── examples/                # 最终用户可见样例
+│   ├── scripts/                 # 实验性执行层
+│   └── outputs/                 # 本地生成结果与 manifest
+├── docs/                        # 调研、发布与路线图文档
+├── scripts/                     # 仓库验证与发布工具
+└── .github/                     # CI 与贡献模板
+```
 
-- 凭证只从环境变量读取。
-- 不要提交 API key、cookie、session token 或账号密码。
-- 即梦/火山兼容接口的 endpoint、签名规则和模型 ID 需要用户提供官方控制台或文档信息。
-- v0.1 不默认做网页 UI 自动化。
+### Prompt 模块地图
 
-## 验证
+| 模块 | 负责内容 |
+| --- | --- |
+| `intake.md` | 提取硬约束、默认值、假设和待确认问题 |
+| `project_brief_builder.md` | 把想法转化为可管理的制作项目 |
+| `director_treatment_builder.md` | 确定情绪、摄影、色彩、光影和节奏 |
+| `story_builder.md` | 生成或改编闭合的短片故事 |
+| `character_scene_bible_builder.md` | 锁定角色与场景一致性 |
+| `shotlist_builder.md` | 设计可生成的镜头与降级方案 |
+| `image_prompt_builder.md` | 生成参考图和逐镜头关键帧提示词 |
+| `video_prompt_builder.md` | 生成以运动为核心的视频提示词 |
+| `platform_adapter.md` | 适配即梦或其他目标平台 |
+| `quick_package_router.md` | 选择 Prompts Only、Quick、Standard 或 Full |
+| `output_composer.md` | 把内部制作结果压缩成最终交付 |
+| `sound_builder.md` | 添加低优先级的配乐和声音方向 |
 
-运行静态校验：
+详细知识放在 `references/` 中按需读取，避免每次使用都加载全部内容。
+
+## 支持范围
+
+| 工作流 | 当前状态 |
+| --- | --- |
+| 通用 AI 生图与视频提示词 | 已支持 |
+| 即梦短视频执行包 | 已支持 |
+| 图生视频镜头流程 | 已支持 |
+| 文生视频规划 | 已支持 |
+| 首尾帧规划 | 支持自然语言方案 |
+| 英文提示词输出 | 用户要求时支持 |
+| 即梦兼容 manifest dry-run | 实验性支持 |
+| 即梦 API 实际提交 | 需要服务商接口信息 |
+| 自动操作即梦网页 | v0.1 不包含 |
+
+AI 平台参数变化很快。本项目不会编造未经确认的模型名称、工作流 ID、开关或签名规则。
+
+## 实验性即梦执行层
+
+仓库包含一个适配器结构的执行脚本：
+
+```bash
+python ai-animation-director/scripts/jimeng_execute.py \
+  --manifest ai-animation-director/outputs/project/manifest.json \
+  --out ai-animation-director/outputs/project \
+  --dry-run
+```
+
+manifest 支持的任务类型：
+
+- `image`
+- `video_text`
+- `video_image`
+- `video_first_last_frame`
+
+真实执行前请阅读 [即梦 API 接入说明](ai-animation-director/references/jimeng-api.md)。
+
+凭证只能从环境变量读取。不要把 API key、cookie、session token、账号密码或私人生成素材提交到仓库。
+
+## 验证项目
+
+提交修改前运行静态校验。
+
+**Windows**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\validate_skill_package.ps1
 ```
 
-跨平台校验：
+**跨平台**
 
 ```bash
 python scripts/validate_skill_package.py
 ```
 
-期望输出：
+预期输出：
 
 ```text
 Skill package validation passed.
 ```
 
-创建空 GitHub 仓库后，可以用脚本发布：
+GitHub Actions 会在 Ubuntu 和 Windows 上运行相同检查。
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\publish_to_github.ps1
-```
+## 设计原则
 
-如果你有具备创建仓库权限的 `GITHUB_TOKEN`，也可以先运行 `scripts/create_github_repo.ps1` 创建空仓库。脚本只读取环境变量，不会保存 token。
+1. **先建立制作逻辑，再装饰提示词。**
+2. **先锁定一致性锚点，再写逐镜头提示词。**
+3. **每个镜头只保留一个主要动作和一个摄影机动作。**
+4. **生图提示词和视频提示词必须分开。**
+5. **短请求默认输出短、快、可复制的结果。**
+6. **每个高难镜头都必须提供降级方案。**
+7. **参考风格必须转译为通用视觉特征。**
+8. **声音服务画面，不抢占导演和镜头优先级。**
 
-## 发布文档
+## 路线图
 
-- [竞品分析与项目差距](docs/competitive-analysis.md)
-- [GitHub 发布路线图](docs/github-release-roadmap.md)
-- [发布检查清单](docs/release-checklist.md)
-- [发布到 GitHub 操作步骤](docs/publish-to-github.md)
-- [优先级改进 backlog](docs/improvement-backlog.md)
-- [GitHub issue 种子](docs/issue-seeds.md)
+- 增加产品广告、定格动画、纪录片写实和英文输出样例；
+- 加强路由规则与复制块完整性校验；
+- 增加 CSV、JSON 分镜导出；
+- 基于官方文档开发服务商平台适配器；
+- 增加 GitHub Social Preview 和紧凑演示动画；
+- 为经过验证的 AI 生图 / 视频平台增加指南。
+
+详细任务见 [优先级改进清单](docs/improvement-backlog.md)。
+
+## 参与贡献
+
+欢迎提交 Bug、平台资料、最终格式样例和工作流改进。
+
+提交 Pull Request 前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md)。仓库已经提供 Bug、平台适配和样例需求模板。
+
+## 安全
+
+不要在 Issue、日志、manifest 或提交记录中包含账号凭证和私人生成素材。安全问题请参考 [SECURITY.md](SECURITY.md)。
 
 ## 许可证
 
-MIT。见 [LICENSE](LICENSE)。
+本项目使用 [MIT License](LICENSE)。
+
+---
+
+<div align="center">
+
+让 AI 动画提示词像一份制作方案，而不是一次抽奖。
+
+[回到顶部](#ai-animation-director)
+
+</div>
