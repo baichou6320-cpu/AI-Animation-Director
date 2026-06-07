@@ -56,6 +56,15 @@ foreach ($example in $examples) {
             $failures.Add("$($example.Name): VID-S$shot does not reference IMG-S$shot.")
         }
     }
+
+    $assetHeadings = [regex]::Matches(
+        $text,
+        '(?m)^### (?:IMG|VID)-'
+    ).Count
+    $copyBlocks = [regex]::Matches($text, '(?m)^```text\r?$').Count
+    if ($assetHeadings -ne $copyBlocks) {
+        $failures.Add("$($example.Name): every copy prompt must start with a non-empty text code block.")
+    }
 }
 
 $promptsOnly = Join-Path $skill 'examples/prompts-only-jimeng.md'
@@ -63,6 +72,39 @@ if (Test-Path -LiteralPath $promptsOnly -PathType Leaf) {
     $text = Get-Content -LiteralPath $promptsOnly -Encoding UTF8 -Raw
     if ($text.Contains('## 2.') -or $text.Contains('## 4.')) {
         $failures.Add('prompts-only-jimeng.md should not include one-line setup or shot table sections.')
+    }
+}
+
+$quickTemplate = Join-Path $skill 'templates/jimeng-quick-package.md'
+if (Test-Path -LiteralPath $quickTemplate -PathType Leaf) {
+    $text = Get-Content -LiteralPath $quickTemplate -Encoding UTF8 -Raw
+    $assetHeadings = [regex]::Matches(
+        $text,
+        '(?m)^### (?:IMG|VID)-'
+    ).Count
+    $copyBlocks = [regex]::Matches($text, '(?m)^```text\r?$').Count
+    if ($assetHeadings -ne $copyBlocks) {
+        $failures.Add('jimeng-quick-package.md: every copy prompt must start with a non-empty text code block.')
+    }
+}
+
+$router = Join-Path $skill 'prompts/quick_package_router.md'
+if (Test-Path -LiteralPath $router -PathType Leaf) {
+    $text = Get-Content -LiteralPath $router -Encoding UTF8 -Raw
+    foreach ($term in @('delivery_mode', 'routing_reason', 'handoff_notes.to_output_composer')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("quick_package_router.md missing routing guard: $term")
+        }
+    }
+}
+
+$composer = Join-Path $skill 'prompts/output_composer.md'
+if (Test-Path -LiteralPath $composer -PathType Leaf) {
+    $text = Get-Content -LiteralPath $composer -Encoding UTF8 -Raw
+    foreach ($term in @('quick_package_router', 'delivery_mode', 'prompts_only', '```text')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("output_composer.md missing delivery guard: $term")
+        }
     }
 }
 

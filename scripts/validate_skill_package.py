@@ -62,12 +62,51 @@ def main() -> int:
             if required_image not in text:
                 failures.append(f"{example.name}: VID-S{shot} does not reference IMG-S{shot}.")
 
+        copy_labels = len(re.findall(r"复制提示词：", text))
+        copy_blocks = len(
+            re.findall(r"复制提示词：[ \t]*\r?\n```text\r?\n(?=\S)", text)
+        )
+        if copy_labels != copy_blocks:
+            failures.append(
+                f"{example.name}: every copy prompt must start with a non-empty text code block."
+            )
+
     prompts_only = SKILL / "examples/prompts-only-jimeng.md"
     if prompts_only.is_file():
         text = read_text(prompts_only)
         if "## 2." in text or "## 4." in text:
             failures.append(
                 "prompts-only-jimeng.md should not include one-line setup or shot table sections."
+            )
+
+    quick_template = SKILL / "templates/jimeng-quick-package.md"
+    if quick_template.is_file():
+        text = read_text(quick_template)
+        copy_labels = len(re.findall(r"复制提示词：", text))
+        copy_blocks = len(
+            re.findall(r"复制提示词：[ \t]*\r?\n```text\r?\n(?=\S)", text)
+        )
+        if copy_labels != copy_blocks:
+            failures.append(
+                "jimeng-quick-package.md: every copy prompt must start with a non-empty text code block."
+            )
+
+    router = SKILL / "prompts/quick_package_router.md"
+    composer = SKILL / "prompts/output_composer.md"
+    if router.is_file():
+        text = read_text(router)
+        for term in ["唯一路由规则", "平台不会覆盖片长和镜头规模判定", "delivery_mode"]:
+            if term not in text:
+                failures.append(f"quick_package_router.md missing routing guard: {term}")
+
+    if composer.is_file():
+        text = read_text(composer)
+        for term in ["本模块不负责判断交付模式", "路由结果是唯一事实来源", "```text"]:
+            if term not in text:
+                failures.append(f"output_composer.md missing delivery guard: {term}")
+        if "## 默认判定规则" in text:
+            failures.append(
+                "output_composer.md must not contain a second delivery-mode decision table."
             )
 
     outputs_dir = SKILL / "outputs"
