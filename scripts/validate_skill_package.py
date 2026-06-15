@@ -25,8 +25,11 @@ REQUIRED_FILES = [
     SKILL / "agents/openai.yaml",
     SKILL / "prompts/output_composer.md",
     SKILL / "prompts/quick_package_router.md",
+    SKILL / "prompts/canvas_workflow_builder.md",
     SKILL / "templates/jimeng-quick-package.md",
+    SKILL / "templates/jimeng-canvas-package.md",
     SKILL / "references/workflow.md",
+    SKILL / "references/jimeng-canvas.md",
 ]
 
 
@@ -53,7 +56,10 @@ def main() -> int:
 
     for example in examples:
         text = read_text(example)
-        if "jimeng" in example.name and "IMG-REF" not in text:
+        is_jimeng = "jimeng" in example.name
+        is_prompts_only = example.name == "prompts-only-jimeng.md"
+
+        if is_jimeng and "IMG-REF" not in text:
             failures.append(f"{example.name}: Jimeng example missing IMG-REF.")
 
         for match in re.finditer(r"VID-S(\d{2})", text):
@@ -61,15 +67,36 @@ def main() -> int:
             required_image = f"`IMG-S{shot}`"
             if required_image not in text:
                 failures.append(f"{example.name}: VID-S{shot} does not reference IMG-S{shot}.")
+            if is_jimeng and not is_prompts_only:
+                export_pattern = rf"导出为：`IMG-S{shot}`"
+                if not re.search(export_pattern, text):
+                    failures.append(
+                        f"{example.name}: canvas workflow does not export IMG-S{shot}."
+                    )
 
-        copy_labels = len(re.findall(r"复制提示词：", text))
-        copy_blocks = len(
-            re.findall(r"复制提示词：[ \t]*\r?\n```text\r?\n(?=\S)", text)
+        prompt_labels = len(
+            re.findall(r"(?:复制提示词|素材提示词|操作提示词)：", text)
         )
-        if copy_labels != copy_blocks:
-            failures.append(
-                f"{example.name}: every copy prompt must start with a non-empty text code block."
+        prompt_blocks = len(
+            re.findall(
+                r"(?:复制提示词|素材提示词|操作提示词)：[ \t]*\r?\n```text\r?\n(?=\S)",
+                text,
             )
+        )
+        if prompt_labels != prompt_blocks:
+            failures.append(
+                f"{example.name}: every user-copyable prompt must start with a non-empty text code block."
+            )
+
+        if is_jimeng and is_prompts_only:
+            if "CV-OP-" in text or "画布/区域" in text:
+                failures.append(
+                    "prompts-only-jimeng.md must not include canvas operation cards."
+                )
+        elif is_jimeng:
+            for term in ["画布资产与关键帧区", "CV-MASTER", "CV-OP-", "Z-S01"]:
+                if term not in text:
+                    failures.append(f"{example.name}: missing canvas term {term}.")
 
     prompts_only = SKILL / "examples/prompts-only-jimeng.md"
     if prompts_only.is_file():
@@ -82,31 +109,104 @@ def main() -> int:
     quick_template = SKILL / "templates/jimeng-quick-package.md"
     if quick_template.is_file():
         text = read_text(quick_template)
-        copy_labels = len(re.findall(r"复制提示词：", text))
-        copy_blocks = len(
-            re.findall(r"复制提示词：[ \t]*\r?\n```text\r?\n(?=\S)", text)
-        )
-        if copy_labels != copy_blocks:
+        if "jimeng-canvas-package.md" not in text:
             failures.append(
-                "jimeng-quick-package.md: every copy prompt must start with a non-empty text code block."
+                "jimeng-quick-package.md must point to the canonical canvas template."
             )
+
+    canvas_template = SKILL / "templates/jimeng-canvas-package.md"
+    if canvas_template.is_file():
+        text = read_text(canvas_template)
+        for term in [
+            "CV-MASTER",
+            "Z-ASSET",
+            "CV-OP-01",
+            "操作类型：`blend`",
+            "导出为：`IMG-S01`",
+            "使用图片：`IMG-S01`",
+        ]:
+            if term not in text:
+                failures.append(f"jimeng-canvas-package.md missing term: {term}")
+        labels = len(re.findall(r"(?:复制提示词|素材提示词|操作提示词)：", text))
+        blocks = len(
+            re.findall(
+                r"(?:复制提示词|素材提示词|操作提示词)：[ \t]*\r?\n```text\r?\n(?=\S)",
+                text,
+            )
+        )
+        if labels != blocks:
+            failures.append(
+                "jimeng-canvas-package.md: every user-copyable prompt must use a non-empty text block."
+            )
+        for match in re.finditer(r"使用图片：`IMG-S(\d{2})`", text):
+            shot = match.group(1)
+            if f"导出为：`IMG-S{shot}`" not in text:
+                failures.append(
+                    f"jimeng-canvas-package.md: VID-S{shot} has no matching canvas export."
+                )
 
     router = SKILL / "prompts/quick_package_router.md"
     composer = SKILL / "prompts/output_composer.md"
     if router.is_file():
         text = read_text(router)
-        for term in ["唯一路由规则", "平台不会覆盖片长和镜头规模判定", "delivery_mode"]:
+        for term in [
+            "唯一路由规则",
+            "平台不会覆盖片长和镜头规模判定",
+            "delivery_mode",
+            "canvas_mode",
+            "prompt_assets_only",
+        ]:
             if term not in text:
                 failures.append(f"quick_package_router.md missing routing guard: {term}")
 
     if composer.is_file():
         text = read_text(composer)
-        for term in ["本模块不负责判断交付模式", "路由结果是唯一事实来源", "```text"]:
+        for term in [
+            "本模块不负责判断交付模式",
+            "路由结果是唯一事实来源",
+            "canvas_mode",
+            "画布资产与关键帧区",
+            "```text",
+        ]:
             if term not in text:
                 failures.append(f"output_composer.md missing delivery guard: {term}")
         if "## 默认判定规则" in text:
             failures.append(
                 "output_composer.md must not contain a second delivery-mode decision table."
+            )
+
+    canvas_builder = SKILL / "prompts/canvas_workflow_builder.md"
+    if canvas_builder.is_file():
+        text = read_text(canvas_builder)
+        for term in [
+            "canvas_plan",
+            "CV-MASTER",
+            "master_plus_sequences",
+            "prompt_assets_only",
+            "generate/import",
+            "export",
+            "7-12 镜",
+            "user_upload",
+            "不重复生成",
+        ]:
+            if term not in text:
+                failures.append(f"canvas_workflow_builder.md missing term: {term}")
+        allowed_ops = {
+            "generate/import",
+            "arrange",
+            "cutout",
+            "blend",
+            "inpaint",
+            "expand",
+            "remove",
+            "upscale",
+            "export",
+        }
+        used_ops = set(re.findall(r"operation_type:\s*([a-z/]+)", text))
+        unknown_ops = sorted(used_ops - allowed_ops)
+        if unknown_ops:
+            failures.append(
+                f"canvas_workflow_builder.md has unsupported operation types: {unknown_ops}"
             )
 
     outputs_dir = SKILL / "outputs"

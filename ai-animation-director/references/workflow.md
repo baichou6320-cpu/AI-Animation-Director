@@ -104,12 +104,24 @@
 
 ### 7. Motion Production / 视频镜头生产
 
-目标：把静态关键帧转成可生成的视频运动设计。
+目标：把通过关键帧或画布导出的静态画面转成可生成的视频运动设计。
 
 使用模块：
 
 - `prompts/video_prompt_builder.md`
 - 用户指定平台时使用 `prompts/platform_adapter.md`
+
+即梦项目在本阶段前增加：
+
+- `prompts/canvas_workflow_builder.md`
+- `references/jimeng-canvas.md`
+
+画布阶段关键产物：
+
+- `canvas_plan`：画布、区域、素材、操作和导出关系。
+- 角色、场景和道具的资产母版。
+- 逐镜头 `IMG-Sxx` 导出，并交给同编号 `VID-Sxx`。
+- 画布只处理静态视觉与关键帧，不承担视频运动设计。
 
 关键产物：
 

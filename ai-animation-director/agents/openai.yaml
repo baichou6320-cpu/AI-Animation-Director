@@ -1,7 +1,7 @@
 interface:
   display_name: "AI Animation Director"
-  short_description: "Create compact AI animation execution packages and prompts."
-  default_prompt: "Use $ai-animation-director to turn this animation idea into a concise Jimeng-ready short-film execution package."
+  short_description: "Create AI animation plans, Jimeng canvas workflows, and prompts."
+  default_prompt: "Use $ai-animation-director to turn this idea into a concise Jimeng-ready animation package with Smart Canvas assets, keyframe exports, and video prompts."
 
 policy:
   allow_implicit_invocation: true

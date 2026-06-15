@@ -1,6 +1,6 @@
 ---
 name: ai-animation-director
-description: Create practical AI animation short-film prompt packages and production plans. Use when Codex needs to turn an animation idea, script, character, visual style, storyboard, or ad concept into an executable AI animation workflow with director treatment, script, shot list, image-generation prompts, video-generation prompts, consistency anchors, music/sound notes, risks, QA checklist, and compact Jimeng-ready execution packages for 5-180 second animated shorts across general AI image/video tools or platform-specific variants.
+description: Create practical AI animation short-film prompt packages and production plans. Use when Codex needs to turn an animation idea, script, character, visual style, storyboard, or ad concept into an executable AI animation workflow with director treatment, script, shot list, image-generation prompts, Jimeng Smart Canvas asset and keyframe workflows, video-generation prompts, consistency anchors, music/sound notes, risks, QA checklist, and compact execution packages for 5-180 second animated shorts across general AI image/video tools or platform-specific variants.
 ---
 
 # AI Animation Director
@@ -38,6 +38,7 @@ description: Create practical AI animation short-film prompt packages and produc
 - `design_bible`: 角色、场景、道具、世界观、一致性锚点、负向约束。
 - `shot_plan`: 镜头数量、镜头目的、时长、景别、运动、转场、难度。
 - `prompt_assets`: 生图提示词、视频提示词、平台适配版本、首尾帧建议。
+- `canvas_plan`: 即梦画布策略、素材、画布、区域、操作、导出与视频交接关系。
 - `sound_plan`: 配乐、环境声、音效、旁白节奏。
 - `risk_register`: 风格漂移、角色漂移、复杂动作、平台限制、修正方案。
 - `handoff_notes`: 当前模块给下一个模块的明确要求。
@@ -215,6 +216,23 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 - 每个镜头包含主体运动、摄影机运动、时间变化、物理约束、连续性要求、避免项、失败降级方案。
 - 每个镜头只保留一个主要主体动作和一个主要摄影机动作；复杂动作建议拆镜。
 
+### `prompts/canvas_workflow_builder.md`
+
+用途：把即梦静态素材和分镜组织为可人工执行的智能画布计划。
+
+使用时机：
+
+- 目标平台是即梦，且交付模式为 Quick、Standard 或 Full。
+- 用户提到智能画布、多图融合、局部重绘、扩图、消除、抠图或已有素材组合。
+- 需要通过角色、场景和道具资产提高多镜头一致性。
+
+输出目标：
+
+- 生成 `canvas_plan`，包含 `CV-*` 画布、`Z-*` 区域、`ASSET-*` 素材、`CV-OP-*` 操作和 `IMG-*` 导出。
+- 复用用户已有素材；没有素材时先准备 `IMG-REF`。
+- 为每个镜头导出 `IMG-Sxx`，再交给同编号 `VID-Sxx`。
+- 不自动操作网页，不依赖实时按钮名称或参数。
+
 ### `prompts/sound_builder.md`
 
 用途：生成配乐与声音方向。
@@ -298,6 +316,7 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 - `references/styles.md`: 当用户提到风格、类型、视觉参考、电影感、动画美术时读取。
 - `references/shot-language.md`: 当需要分镜、景别、机位、摄影机运动、剪辑节奏时读取。
 - `references/prompt-templates.md`: 当需要生图提示词、生视频提示词、角色锚点、场景锚点时读取。
+- `references/jimeng-canvas.md`: 当目标平台是即梦并需要画布、融合、局部编辑、扩图、抠图或关键帧导出时读取。
 - `references/workflow.md`: 当用户要求完整制作包、团队交接、真实影视制作路径或“从想法到成片”解释时读取。
 - `references/platform-guides.md`: 当用户指定具体 AI 平台时读取；若该文件不存在，使用通用平台适配原则。
 - `references/production-checklist.md`: 当输出完整制作包、做 QA、修复失败结果时读取。
@@ -312,21 +331,24 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 4. 设计圣经：`character_scene_bible_builder`
 5. 分镜与镜头规划：`shotlist_builder`
 6. 关键帧生产：`image_prompt_builder`
-7. 视频镜头生产：`video_prompt_builder`
-8. 平台适配：`platform_adapter`，仅当用户指定平台时使用
-9. 剪辑组装检查：`shotlist_builder`、`qa_reviewer`
-10. 声音与配乐：`sound_builder`
-11. 质检与交付：`qa_reviewer`
-12. 交付模式路由：`quick_package_router`
-13. 输出压缩与交付：`output_composer`
+7. 交付模式路由：`quick_package_router`，在画布规划前确定 `delivery_mode` 和 `canvas_mode`
+8. 即梦静态素材适配：`platform_adapter`，目标平台为即梦时先适配角色、场景、道具和关键帧提示词
+9. 即梦画布规划：`canvas_workflow_builder`，`canvas_mode=enabled` 时使用
+10. 视频镜头生产：`video_prompt_builder`，读取画布导出关系或普通关键帧提示词
+11. 平台视频适配：`platform_adapter`，用户指定平台时适配最终视频提示词
+12. 剪辑组装检查：`shotlist_builder`、`qa_reviewer`
+13. 声音与配乐：`sound_builder`
+14. 质检与交付：`qa_reviewer`
+15. 输出压缩与交付：`output_composer`
 
 如果用户只要求局部产出，则只运行相关模块：
 
 - 只要分镜：使用 `intake`、`director_treatment_builder`、`story_builder`、`shotlist_builder`、`qa_reviewer`。
 - 只要生图提示词：使用 `intake`、`character_scene_bible_builder`、`image_prompt_builder`、必要时使用 `styles` reference。
 - 只要视频提示词：使用 `intake`、`shotlist_builder`、`video_prompt_builder`、必要时使用 `platform_adapter`。
-- 只要即梦执行包：使用 `intake`、`character_scene_bible_builder`、`shotlist_builder`、`image_prompt_builder`、`video_prompt_builder`、`platform_adapter`、`quick_package_router`、`output_composer`，默认 `Quick Mode`。
+- 只要即梦执行包：使用 `intake`、`character_scene_bible_builder`、`shotlist_builder`、`image_prompt_builder`、`quick_package_router`、`platform_adapter`、`canvas_workflow_builder`、`video_prompt_builder`、`output_composer`，默认 `Quick Mode`。
 - 只要即梦提示词：使用 `intake`、`character_scene_bible_builder`、`shotlist_builder`、`image_prompt_builder`、`video_prompt_builder`、`platform_adapter`、`quick_package_router`、`output_composer`，默认 `Prompts Only`。
+- 已有角色图/场景图做即梦短片：把已有素材标记为 `user_upload`，使用 `canvas_workflow_builder` 导入和编排，不重复生成同类参考图。
 - 已有剧本改分镜：使用 `intake`、`director_treatment_builder`、`character_scene_bible_builder`、`shotlist_builder`，不要重写核心剧情。
 - 平台适配：先保留通用提示词，再使用 `platform_adapter` 生成目标平台版本。
 - 失败修复：使用 `qa_reviewer`，再回到对应模块修正提示词、镜头或锚点。
@@ -354,7 +376,7 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 2. `一句话设定`
 3. `全局锚点`
 4. `镜头表`
-5. `即梦生图复制区`
+5. `画布资产与关键帧区`
 6. `即梦视频复制区`
 7. `失败修正`
 
@@ -366,7 +388,9 @@ Quick Mode 约束：
 - 角色/场景圣经只提炼为全局锚点和避免项。
 - 配乐最多 1 行；风险最多保留最重要 3 条。
 - 每个镜头表至少包含：时长、画面、动作、即梦方式。
-- 即梦提示词必须保留可复制的生图提示词和视频提示词。
+- 即梦项目默认使用画布阶段整合静态素材和镜头首帧，不额外重复一套完整生图章节。
+- 画布区必须包含画布/区域、输入素材、稳定操作类型、完成检查、失败改法和 `IMG-Sxx` 导出。
+- 即梦提示词必须保留画布素材提示词、局部操作提示词和视频提示词。
 - 即梦复制块必须使用稳定编号，如 `IMG-REF`、`IMG-S01`、`VID-S01`。
 - 每条“复制提示词”必须放在独立的 `text` 代码块中，操作说明和失败修正放在代码块外。
 - 第一节必须告诉用户先生成哪张图、再生成哪段视频。
@@ -385,7 +409,7 @@ Quick Mode 约束：
 3. 故事结构
 4. 角色/场景锚点
 5. 分镜镜头表
-6. AI 生图提示词
+6. 画布资产、关键帧和导出计划（即梦项目）
 7. AI 视频提示词
 8. 声音方向
 9. 主要风险与修正
@@ -394,7 +418,15 @@ Quick Mode 约束：
 
 只有当用户明确要求“完整制作包”“详细方案”“团队交接”“完整导演阐述”“完整角色圣经”“所有模块都展开”时才使用。
 
-Full Mode 可以输出完整的项目简报、导演阐述、故事脚本、角色与场景圣经、分镜镜头表、AI 生图提示词、AI 视频提示词、配乐与声音建议、风险提示与迭代方案、最终制作检查清单。
+Full Mode 可以输出完整的项目简报、导演阐述、故事脚本、角色与场景圣经、分镜镜头表、AI 生图提示词、即梦画布计划、AI 视频提示词、配乐与声音建议、风险提示与迭代方案、最终制作检查清单。
+
+即梦项目的画布规则：
+
+- Quick、Standard、Full 默认启用 `canvas_plan`。
+- Prompts Only 不展示画布布局或操作卡，只保留按角色、场景、道具、镜头用途分类的 `IMG-*` 提示词。
+- 非即梦项目不启用 Canvas Mode。
+- 6 镜以内使用单张主画布；7-12 镜使用资产母版加场次画布；超过 12 镜按场次分批，每张分镜画布最多 4-6 镜。
+- 画布只负责视觉资产、构图和关键帧修复；视频运动仍由 `video_prompt_builder` 负责。
 
 无论使用哪种模式，每个镜头都必须保留明确的叙事目的、可生成动作、一致性锚点和失败降级思路；只是 Quick Mode 将这些信息压缩到镜头表、提示词和失败修正中。
 

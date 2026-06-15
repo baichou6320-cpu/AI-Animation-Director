@@ -4,7 +4,7 @@
 
 ### Turn one animation idea into a production-ready AI video prompt package
 
-Director treatment, story structure, character consistency, shot design, image prompts,
+Director treatment, story structure, character consistency, shot design, smart canvas planning,
 video prompts, Jimeng adaptation, and production QA in one composable Codex Skill.
 
 [![Release](https://img.shields.io/github/v/release/baichou6320-cpu/AI-Animation-Director?style=flat-square&color=2f81f7)](https://github.com/baichou6320-cpu/AI-Animation-Director/releases)
@@ -62,6 +62,7 @@ Depending on the request, the Skill can produce:
 - character and environment consistency anchors;
 - shot list with duration, framing, camera movement, action, transition, and difficulty;
 - keyframe and reference-image prompts;
+- Jimeng Smart Canvas asset, layout, blend, inpaint, expand, and keyframe export plans;
 - image-to-video or text-to-video prompts;
 - Jimeng-oriented copy blocks;
 - lightweight music, ambience, and sound-effect direction;
@@ -71,8 +72,8 @@ Depending on the request, the Skill can produce:
 
 | Mode | Best for | Visible output |
 | --- | --- | --- |
-| **Prompts Only** | "Just give me Jimeng prompts" | Global anchors, image prompts, video prompts, critical fixes |
-| **Quick Mode** | 5-30 seconds, usually 3-6 shots | One-line concept, anchors, shot table, copy blocks, execution order |
+| **Prompts Only** | "Just give me Jimeng prompts" | Global anchors, canvas asset prompts, video prompts, critical fixes |
+| **Quick Mode** | 5-30 seconds, usually 3-6 shots | One-line concept, shot table, canvas operations, video copy blocks |
 | **Standard Mode** | 30-90 second shorts | Brief, concise treatment, story, bible anchors, full shot prompts |
 | **Full Mode** | Complete package or team handoff | Full pre-production package with handoff notes and QA |
 
@@ -126,10 +127,11 @@ Chinese requests work directly:
 ### 4. Execute in order
 
 ```text
-IMG-REF  -> generate the character/environment reference
-IMG-S01  -> generate shot 1 keyframe
+IMG-REF  -> generate or import character/environment references
+CV-OP-01 -> arrange, blend, or repair the shot on canvas
+IMG-S01  -> export shot 1 keyframe from Z-S01
 VID-S01  -> animate IMG-S01
-IMG-S02  -> generate shot 2 keyframe
+IMG-S02  -> export shot 2 keyframe from Z-S02
 VID-S02  -> animate IMG-S02
 ...
 ```
@@ -163,8 +165,14 @@ The Skill compresses the production plan into a package like this:
 | S02 | 3s | Mushroom offers a dew drop | Firefly moves closer |
 | S03 | 4s | Warm light fills the forest | Light brightens; mushroom blinks |
 
-## IMG-S01
-Copy prompt: ...
+## Canvas assets and keyframes
+Canvas: CV-MASTER
+Zones: Z-ASSET, Z-S01, Z-S02, Z-S03
+
+### CV-OP-01 Shot S01 blend
+Input assets: ASSET-CHAR-A, ASSET-SCENE-A
+Operation: blend
+Export: IMG-S01
 
 ## VID-S01
 Use image: IMG-S01
@@ -190,12 +198,13 @@ flowchart LR
     D --> E["Story"]
     E --> F["Character & Scene Bible"]
     F --> G["Shot List"]
-    G --> H["Image Prompts"]
-    H --> I["Video Prompts"]
-    I --> J["Platform Adapter"]
-    J --> K["QA Review"]
-    K --> L["Output Router"]
-    L --> M["Copy-ready Package"]
+    G --> H["Image & Platform Asset Prompts"]
+    H --> I["Jimeng Smart Canvas"]
+    I --> J["Keyframe Exports"]
+    J --> K["Video Prompts"]
+    K --> L["QA Review"]
+    L --> M["Output Router"]
+    M --> N["Copy-ready Package"]
 ```
 
 Each stage receives upstream constraints and hands explicit requirements to the next stage. A director's camera rules reach the shot list; character anchors reach every image prompt; shot motion limits reach every video prompt.
@@ -228,7 +237,8 @@ AI-Animation-Director/
 | `story_builder.md` | Build or adapt a closed short-film narrative |
 | `character_scene_bible_builder.md` | Lock visual consistency across shots |
 | `shotlist_builder.md` | Design feasible shots with fallback options |
-| `image_prompt_builder.md` | Create reference and keyframe prompts |
+| `image_prompt_builder.md` | Create canvas input assets and keyframe composition prompts |
+| `canvas_workflow_builder.md` | Plan Jimeng canvases, assets, zones, edits, and keyframe exports |
 | `video_prompt_builder.md` | Create motion-focused video prompts |
 | `platform_adapter.md` | Adapt natural-language prompts for Jimeng or other platforms |
 | `quick_package_router.md` | Select Prompts Only, Quick, Standard, or Full mode |
@@ -243,6 +253,8 @@ Detailed references are loaded only when needed, keeping `SKILL.md` focused and 
 | --- | --- |
 | Generic AI image and video prompts | Supported |
 | Jimeng short-video prompt package | Supported |
+| Jimeng Smart Canvas manual execution package | Supported |
+| Multi-image blend, inpaint, expand, remove, and cutout planning | Supported |
 | Image-to-video shot workflow | Supported |
 | Text-to-video planning | Supported |
 | First/last-frame planning | Supported as natural-language guidance |
@@ -252,6 +264,8 @@ Detailed references are loaded only when needed, keeping `SKILL.md` focused and 
 | Automatic web UI operation | Not included in v0.1 |
 
 Platform parameters change frequently. The Skill avoids inventing unsupported model names, IDs, switches, or signing rules.
+
+Canvas capability guidance is based on the official [Jimeng site](https://jimeng.jianying.com/) and Dreamina's official [AI Blender](https://dreamina.capcut.com/tools/ai-blender) and [AI Photo Editor](https://dreamina.capcut.com/tools/ai-photo-editor) pages as checked in June 2026. Button names, asset limits, models, credits, and export options may vary by account and current UI.
 
 ## Experimental Jimeng execution layer
 

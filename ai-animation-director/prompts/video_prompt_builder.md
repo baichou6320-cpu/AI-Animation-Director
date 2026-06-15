@@ -1,6 +1,6 @@
 # Video Prompt Builder Prompt
 
-本模块接收 `Project Packet`、分镜镜头表和 AI 生图关键帧提示词，生成 AI 视频镜头提示词。它负责把每个镜头的静态画面、主体动作、摄影机运动、时间变化、物理约束和连续性要求，转化为可复制到 AI 视频工具中的运动提示词。
+本模块接收 `Project Packet`、分镜镜头表、AI 生图关键帧提示词和可选的 `canvas_plan`，生成 AI 视频镜头提示词。它负责把每个镜头的静态画面、主体动作、摄影机运动、时间变化、物理约束和连续性要求，转化为可复制到 AI 视频工具中的运动提示词。
 
 本模块不是生图模块，不重新写关键帧美术；也不是分镜模块，不重新安排镜头顺序；更不是平台适配模块，不编造具体模型参数。它的核心产物是“这个镜头应该如何动，并且如何避免 AI 视频生成失败”。
 
@@ -43,6 +43,7 @@
 - `design_bible`
 - `shot_plan`
 - `prompt_assets`
+- `canvas_plan`
 - `sound_plan`
 - `risk_register`
 - `handoff_notes`
@@ -56,8 +57,17 @@
 
 - 分镜镜头表中的时长、目的、画面、景别、机位、摄影机运动、主体动作、情绪、光影、难度和降级方案。
 - 生图模块给出的首帧/尾帧建议。
+- 即梦画布导出的 `IMG-Sxx`、可选 `IMG-Sxx-END` 及修复后的视觉锚点。
 - Character anchor、Scene anchor、Style anchor、Negative prompt fragment。
 - 平台假设和语言要求。
+
+输入优先级：
+
+1. `canvas_plan.exports` 中的正式画布导出。
+2. 生图模块的关键帧提示词。
+3. 没有静态输入时才使用文生视频描述。
+
+如果 `canvas_plan` 已启用，不得把画布操作提示词写入视频提示词，也不得引用未导出的画布中间状态。
 
 ## 本模块要回答的问题
 
@@ -73,6 +83,7 @@
 - 风、雨、水、布料、灯光等环境运动如何受控？
 - 哪些内容必须避免？
 - 失败时如何简化？
+- 如果使用画布，正式输入是否为同编号 `IMG-Sxx`？
 
 ## 视频提示词结构
 
@@ -171,6 +182,12 @@
 - `prompt_assets`
 - `risk_register`
 - `handoff_notes`
+
+当存在 `canvas_plan` 时：
+
+- 在 `prompt_assets` 中记录 `VID-Sxx -> IMG-Sxx`。
+- 不修改 `canvas_plan` 的画布、区域或操作。
+- 发现某镜头没有对应画布导出时，在 `risk_register` 报错，不自行编造素材。
 
 可少量补充：
 

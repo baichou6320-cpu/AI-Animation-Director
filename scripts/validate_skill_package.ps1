@@ -32,8 +32,11 @@ Require-File (Join-Path $skill "SKILL.md")
 Require-File (Join-Path $skill "agents/openai.yaml")
 Require-File (Join-Path $skill "prompts/output_composer.md")
 Require-File (Join-Path $skill "prompts/quick_package_router.md")
+Require-File (Join-Path $skill "prompts/canvas_workflow_builder.md")
 Require-File (Join-Path $skill "templates/jimeng-quick-package.md")
+Require-File (Join-Path $skill "templates/jimeng-canvas-package.md")
 Require-File (Join-Path $skill "references/workflow.md")
+Require-File (Join-Path $skill "references/jimeng-canvas.md")
 Require-Dir (Join-Path $skill "examples")
 
 $examples = Get-ChildItem -Path (Join-Path $skill "examples") -Filter "*.md" -File -ErrorAction SilentlyContinue
@@ -57,13 +60,23 @@ foreach ($example in $examples) {
         }
     }
 
-    $assetHeadings = [regex]::Matches(
-        $text,
-        '(?m)^### (?:IMG|VID)-'
-    ).Count
+    $videoHeadings = [regex]::Matches($text, '(?m)^### VID-S').Count
     $copyBlocks = [regex]::Matches($text, '(?m)^```text\r?$').Count
-    if ($assetHeadings -ne $copyBlocks) {
-        $failures.Add("$($example.Name): every copy prompt must start with a non-empty text code block.")
+    if ($copyBlocks -lt $videoHeadings) {
+        $failures.Add("$($example.Name): missing non-empty text code blocks.")
+    }
+
+    if ($example.Name -eq 'prompts-only-jimeng.md') {
+        if ($text.Contains('CV-OP-')) {
+            $failures.Add('prompts-only-jimeng.md must not include canvas operation cards.')
+        }
+    }
+    elseif ($example.Name -match 'jimeng') {
+        foreach ($term in @('CV-MASTER', 'CV-OP-', 'Z-S01')) {
+            if (-not $text.Contains($term)) {
+                $failures.Add("$($example.Name): missing canvas term $term.")
+            }
+        }
     }
 }
 
@@ -78,20 +91,25 @@ if (Test-Path -LiteralPath $promptsOnly -PathType Leaf) {
 $quickTemplate = Join-Path $skill 'templates/jimeng-quick-package.md'
 if (Test-Path -LiteralPath $quickTemplate -PathType Leaf) {
     $text = Get-Content -LiteralPath $quickTemplate -Encoding UTF8 -Raw
-    $assetHeadings = [regex]::Matches(
-        $text,
-        '(?m)^### (?:IMG|VID)-'
-    ).Count
-    $copyBlocks = [regex]::Matches($text, '(?m)^```text\r?$').Count
-    if ($assetHeadings -ne $copyBlocks) {
-        $failures.Add('jimeng-quick-package.md: every copy prompt must start with a non-empty text code block.')
+    if (-not $text.Contains('jimeng-canvas-package.md')) {
+        $failures.Add('jimeng-quick-package.md must point to the canonical canvas template.')
+    }
+}
+
+$canvasTemplate = Join-Path $skill 'templates/jimeng-canvas-package.md'
+if (Test-Path -LiteralPath $canvasTemplate -PathType Leaf) {
+    $text = Get-Content -LiteralPath $canvasTemplate -Encoding UTF8 -Raw
+    foreach ($term in @('CV-MASTER', 'Z-ASSET', 'CV-OP-01', 'IMG-S01', 'VID-S01', '```text')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("jimeng-canvas-package.md missing term: $term")
+        }
     }
 }
 
 $router = Join-Path $skill 'prompts/quick_package_router.md'
 if (Test-Path -LiteralPath $router -PathType Leaf) {
     $text = Get-Content -LiteralPath $router -Encoding UTF8 -Raw
-    foreach ($term in @('delivery_mode', 'routing_reason', 'handoff_notes.to_output_composer')) {
+    foreach ($term in @('delivery_mode', 'canvas_mode', 'prompt_assets_only', 'routing_reason', 'handoff_notes.to_output_composer')) {
         if (-not $text.Contains($term)) {
             $failures.Add("quick_package_router.md missing routing guard: $term")
         }
@@ -101,9 +119,19 @@ if (Test-Path -LiteralPath $router -PathType Leaf) {
 $composer = Join-Path $skill 'prompts/output_composer.md'
 if (Test-Path -LiteralPath $composer -PathType Leaf) {
     $text = Get-Content -LiteralPath $composer -Encoding UTF8 -Raw
-    foreach ($term in @('quick_package_router', 'delivery_mode', 'prompts_only', '```text')) {
+    foreach ($term in @('quick_package_router', 'delivery_mode', 'canvas_mode', 'prompts_only', 'CV-OP-01', '```text')) {
         if (-not $text.Contains($term)) {
             $failures.Add("output_composer.md missing delivery guard: $term")
+        }
+    }
+}
+
+$canvasBuilder = Join-Path $skill 'prompts/canvas_workflow_builder.md'
+if (Test-Path -LiteralPath $canvasBuilder -PathType Leaf) {
+    $text = Get-Content -LiteralPath $canvasBuilder -Encoding UTF8 -Raw
+    foreach ($term in @('canvas_plan', 'CV-MASTER', 'master_plus_sequences', 'prompt_assets_only', 'generate/import', 'user_upload', 'export')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("canvas_workflow_builder.md missing term: $term")
         }
     }
 }
