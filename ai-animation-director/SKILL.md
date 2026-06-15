@@ -39,6 +39,7 @@ description: Create practical AI animation short-film prompt packages and produc
 - `shot_plan`: 镜头数量、镜头目的、时长、景别、运动、转场、难度。
 - `prompt_assets`: 生图提示词、视频提示词、平台适配版本、首尾帧建议。
 - `canvas_plan`: 即梦画布策略、素材、画布、区域、操作、导出与视频交接关系。
+- `execution_state`: 当前制作进度、已完成资产/镜头、失败步骤和下一动作。
 - `sound_plan`: 配乐、环境声、音效、旁白节奏。
 - `risk_register`: 风格漂移、角色漂移、复杂动作、平台限制、修正方案。
 - `handoff_notes`: 当前模块给下一个模块的明确要求。
@@ -57,7 +58,7 @@ description: Create practical AI animation short-film prompt packages and produc
 - `SKILL.md`: 总调度文件。判断用户需求、选择 prompt 模块、规定执行顺序、约束输出格式。
 - `prompts/`: 可组合的工作流提示词模块。每个模块负责一个制作阶段。
 - `references/`: 可按需读取的知识库，包括风格、镜头语言、提示词模板、平台差异和质检表。
-- `templates/`: 稳定输出模板，如 `jimeng-quick-package.md`、制作包模板、分镜表模板、提示词卡片模板。
+- `templates/`: 稳定输出模板，如 `jimeng-canvas-package.md`、`jimeng-continue-card.md`、制作包模板和提示词卡片模板。
 - `examples/`: 验收样例，使用最终输出格式，不包含内部推理，如像素风即梦短包、国风水墨即梦短包、只要提示词模式。
 - `tools/`: 后续可加入轻量校验脚本，用于检查制作包是否缺少关键部分。
 - `scripts/`: 可选执行层，用于把已审核的 manifest 提交给即梦兼容 API、轮询任务并下载结果。
@@ -265,7 +266,7 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 
 ### `prompts/quick_package_router.md`
 
-用途：在最终交付前判断用户请求应该进入 `Prompts Only`、`Quick Mode`、`Standard Mode` 还是 `Full Mode`。
+用途：在最终交付前判断用户请求应该进入 `Prompts Only`、`Continue Mode`、`Quick Mode`、`Standard Mode` 还是 `Full Mode`。
 
 使用时机：
 
@@ -274,7 +275,8 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 
 输出目标：
 
-- 明确 `delivery_mode`、`visible_sections`、`shot_id_range` 和给 `output_composer` 的交付说明。
+- 明确 `delivery_mode`、`visible_sections`、`shot_id_range`、`canvas_mode` 和给 `output_composer` 的交付说明。
+- 用户报告“素材好了”“S01 完成”“某一步失败”“继续下一步”时进入 `Continue Mode`，只交付下一张操作卡。
 - 稳定路由同类请求，避免即梦短片有时输出短包、有时输出完整制片文档。
 - 用户说“只要提示词”时，省略一句话设定和镜头表，只保留锚点、复制区和失败修正。
 
@@ -286,12 +288,13 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 
 - 所有完整或半完整流程在交付给用户前都应使用。
 - 用户指定即梦、短片、3-6 镜头、快速测试、直接复制提示词时，默认使用 `Quick Mode`。
+- 用户正在执行既有项目并报告进度或失败时，使用 `Continue Mode`，不要重复完整执行包。
 - 用户说“太复杂”“不好用”“只要提示词”“只要即梦执行包”时必须使用。
 
 输出目标：
 
 - 默认不暴露完整 `Project Packet`、`Handoff Notes`、长篇导演阐述、完整角色/场景圣经。
-- 根据 `Quick Mode`、`Standard Mode`、`Full Mode` 选择合适颗粒度。
+- 根据 `Prompts Only`、`Continue Mode`、`Quick Mode`、`Standard Mode`、`Full Mode` 选择合适颗粒度。
 - 对即梦项目优先输出“复制提示词”和“生成顺序”。
 
 ### `prompts/qa_reviewer.md`
@@ -323,6 +326,8 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 
 ## 默认执行顺序
 
+如果用户是在汇报既有项目进度，先运行 `quick_package_router`。命中 `Continue Mode` 后，只读取当前步骤所需字段和对应模块，不重新运行完整制作管线。
+
 完整制作包默认遵循“从想法到成片”的制作路径，按以下顺序执行：
 
 1. 创意捕捉：`intake`
@@ -348,6 +353,7 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 - 只要视频提示词：使用 `intake`、`shotlist_builder`、`video_prompt_builder`、必要时使用 `platform_adapter`。
 - 只要即梦执行包：使用 `intake`、`character_scene_bible_builder`、`shotlist_builder`、`image_prompt_builder`、`quick_package_router`、`platform_adapter`、`canvas_workflow_builder`、`video_prompt_builder`、`output_composer`，默认 `Quick Mode`。
 - 只要即梦提示词：使用 `intake`、`character_scene_bible_builder`、`shotlist_builder`、`image_prompt_builder`、`video_prompt_builder`、`platform_adapter`、`quick_package_router`、`output_composer`，默认 `Prompts Only`。
+- 继续即梦制作：读取已有 `execution_state` 和用户本轮进度，使用 `quick_package_router`、对应失败步骤的模块、`output_composer`，默认 `Continue Mode`。
 - 已有角色图/场景图做即梦短片：把已有素材标记为 `user_upload`，使用 `canvas_workflow_builder` 导入和编排，不重复生成同类参考图。
 - 已有剧本改分镜：使用 `intake`、`director_treatment_builder`、`character_scene_bible_builder`、`shotlist_builder`，不要重写核心剧情。
 - 平台适配：先保留通用提示词，再使用 `platform_adapter` 生成目标平台版本。
@@ -358,6 +364,20 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 内部制作流程可以完整运行，但用户可见结果默认必须经过 `output_composer` 压缩。默认目标是“让用户立刻复制到 AI 工具里试”，而不是展示完整制片文档。
 
 在进入 `output_composer` 前，先使用 `quick_package_router` 判断交付模式。该路由结果是交付模式的唯一来源，`output_composer` 不得再次根据平台、片长或内部产物自行改判。即使内部已经生成导演方案、故事结构和圣经，Quick Mode 也只展示执行所需内容。
+
+### Continue Mode（制作续接）
+
+当用户已经开始执行项目，并说“素材好了”“S01 完成”“某一步失败”“继续”“下一步”或“从 S03 接着做”时使用。
+
+只输出：
+
+1. 当前状态。
+2. 下一步动作。
+3. 当前步骤唯一需要复制的提示词（如有）。
+4. 完成检查。
+5. 失败后改法。
+
+不要重复一句话设定、完整锚点、镜头表、其他镜头提示词或全部画布操作。只有用户明确要求“重新输出整包”时才回到原交付模式。
 
 ### Quick Mode（默认）
 
@@ -373,12 +393,10 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 默认输出结构：
 
 1. `先做这几步`
-2. `一句话设定`
-3. `全局锚点`
-4. `镜头表`
-5. `画布资产与关键帧区`
-6. `即梦视频复制区`
-7. `失败修正`
+2. `项目锚点与镜头表`
+3. `素材准备`
+4. `逐镜头执行卡`
+5. `失败修正`
 
 Quick Mode 约束：
 
@@ -389,7 +407,9 @@ Quick Mode 约束：
 - 配乐最多 1 行；风险最多保留最重要 3 条。
 - 每个镜头表至少包含：时长、画面、动作、即梦方式。
 - 即梦项目默认使用画布阶段整合静态素材和镜头首帧，不额外重复一套完整生图章节。
-- 画布区必须包含画布/区域、输入素材、稳定操作类型、完成检查、失败改法和 `IMG-Sxx` 导出。
+- 6 镜以内不单独展开画布布局表，只用一行说明 `CV-MASTER` 包含 `Z-ASSET` 与 `Z-Sxx`。
+- 每个镜头使用一张连续执行卡，把画布操作、`IMG-Sxx` 导出、`VID-Sxx` 提示词、检查点和失败改法放在一起。
+- 执行卡必须包含画布/区域、输入素材、稳定操作类型、完成检查、失败改法和 `IMG-Sxx` 导出。
 - 即梦提示词必须保留画布素材提示词、局部操作提示词和视频提示词。
 - 即梦复制块必须使用稳定编号，如 `IMG-REF`、`IMG-S01`、`VID-S01`。
 - 每条“复制提示词”必须放在独立的 `text` 代码块中，操作说明和失败修正放在代码块外。

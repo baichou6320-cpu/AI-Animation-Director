@@ -28,6 +28,7 @@ REQUIRED_FILES = [
     SKILL / "prompts/canvas_workflow_builder.md",
     SKILL / "templates/jimeng-quick-package.md",
     SKILL / "templates/jimeng-canvas-package.md",
+    SKILL / "templates/jimeng-continue-card.md",
     SKILL / "references/workflow.md",
     SKILL / "references/jimeng-canvas.md",
 ]
@@ -94,9 +95,14 @@ def main() -> int:
                     "prompts-only-jimeng.md must not include canvas operation cards."
                 )
         elif is_jimeng:
-            for term in ["画布资产与关键帧区", "CV-MASTER", "CV-OP-", "Z-S01"]:
+            for term in ["逐镜头执行卡", "CV-MASTER", "CV-OP-", "Z-S01"]:
                 if term not in text:
                     failures.append(f"{example.name}: missing canvas term {term}.")
+            for old_section in ["画布资产与关键帧区", "即梦视频复制区"]:
+                if old_section in text:
+                    failures.append(
+                        f"{example.name}: still uses separated legacy section {old_section}."
+                    )
 
     prompts_only = SKILL / "examples/prompts-only-jimeng.md"
     if prompts_only.is_file():
@@ -120,6 +126,8 @@ def main() -> int:
         for term in [
             "CV-MASTER",
             "Z-ASSET",
+            "逐镜头执行卡",
+            "Z-S01 -> IMG-S01 -> VID-S01",
             "CV-OP-01",
             "操作类型：`blend`",
             "导出为：`IMG-S01`",
@@ -144,6 +152,51 @@ def main() -> int:
                 failures.append(
                     f"jimeng-canvas-package.md: VID-S{shot} has no matching canvas export."
                 )
+        for old_section in ["画布资产与关键帧区", "即梦视频复制区"]:
+            if old_section in text:
+                failures.append(
+                    f"jimeng-canvas-package.md still uses legacy section {old_section}."
+                )
+
+    continue_template = SKILL / "templates/jimeng-continue-card.md"
+    if continue_template.is_file():
+        text = read_text(continue_template)
+        for term in [
+            "继续制作：下一步",
+            "当前进度",
+            "下一步",
+            "完成检查",
+            "失败后改法",
+            "完成后回复",
+        ]:
+            if term not in text:
+                failures.append(f"jimeng-continue-card.md missing term: {term}")
+
+    continue_examples = sorted((SKILL / "examples").glob("continue-*.md"))
+    if len(continue_examples) < 2:
+        failures.append("Expected at least 2 Continue Mode examples.")
+    for continue_example in continue_examples:
+        text = read_text(continue_example)
+        for term in [
+            "delivery_mode: continue",
+            "next_action: single",
+            "当前进度",
+            "下一步",
+            "完成后回复",
+        ]:
+            if term not in text:
+                failures.append(f"{continue_example.name} missing term: {term}")
+        vid_ids = set(re.findall(r"VID-S\d{2}", text))
+        img_ids = set(re.findall(r"IMG-S\d{2}", text))
+        if len(vid_ids) > 1 or len(img_ids) > 1:
+            failures.append(
+                f"{continue_example.name} must contain only one current shot."
+            )
+        for forbidden in ["项目锚点", "镜头表"]:
+            if forbidden in text:
+                failures.append(
+                    f"{continue_example.name} must not repeat package content: {forbidden}"
+                )
 
     router = SKILL / "prompts/quick_package_router.md"
     composer = SKILL / "prompts/output_composer.md"
@@ -153,6 +206,8 @@ def main() -> int:
             "唯一路由规则",
             "平台不会覆盖片长和镜头规模判定",
             "delivery_mode",
+            "Continue Mode",
+            "execution_state",
             "canvas_mode",
             "prompt_assets_only",
         ]:
@@ -164,8 +219,9 @@ def main() -> int:
         for term in [
             "本模块不负责判断交付模式",
             "路由结果是唯一事实来源",
+            "Continue Mode",
+            "逐镜头执行卡",
             "canvas_mode",
-            "画布资产与关键帧区",
             "```text",
         ]:
             if term not in text:

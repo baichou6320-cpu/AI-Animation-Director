@@ -68,16 +68,18 @@ Depending on the request, the Skill can produce:
 - lightweight music, ambience, and sound-effect direction;
 - production risks, fallback shots, and final QA checks.
 
-### Four output modes
+### Five output modes
 
 | Mode | Best for | Visible output |
 | --- | --- | --- |
 | **Prompts Only** | "Just give me Jimeng prompts" | Global anchors, canvas asset prompts, video prompts, critical fixes |
-| **Quick Mode** | 5-30 seconds, usually 3-6 shots | One-line concept, shot table, canvas operations, video copy blocks |
+| **Continue Mode** | Production has started; report success or failure | Current state, one next action, prompt, and checks |
+| **Quick Mode** | 5-30 seconds, usually 3-6 shots | Anchors, asset preparation, per-shot execution cards |
 | **Standard Mode** | 30-90 second shorts | Brief, concise treatment, story, bible anchors, full shot prompts |
 | **Full Mode** | Complete package or team handoff | Full pre-production package with handoff notes and QA |
 
 For Jimeng shorts under 30 seconds and 6 shots, **Quick Mode is the default**.
+Once production starts, reply with messages such as "`IMG-S01` exported, continue" or "`VID-S02` failed" to receive only the next action.
 
 ## Quick start
 
@@ -136,7 +138,7 @@ VID-S02  -> animate IMG-S02
 ...
 ```
 
-The stable IDs make it obvious which image belongs to which video prompt.
+The stable IDs make it obvious which image belongs to which video prompt. Report a completed ID to enter Continue Mode.
 
 ## Example output
 
@@ -152,32 +154,37 @@ The Skill compresses the production plan into a package like this:
 ```markdown
 # 10-second Pixel-Art Jimeng Package
 
-## Global anchors
+## Project anchors and shot plan
 - Character: round mushroom, red cap with exactly 3 cream spots...
 - Scene: post-rain forest, moss, broad leaves, blue-violet night...
 - Style: retro pixel art, low-resolution game frame, crisp pixel edges...
 - Avoid: realistic insects, 3D toy look, text, watermark, character drift.
 
-## Shot plan
 | Shot | Time | Image | Motion |
 | --- | --- | --- | --- |
 | S01 | 3s | Mushroom notices the dim firefly | Looks up; tail light flickers |
 | S02 | 3s | Mushroom offers a dew drop | Firefly moves closer |
 | S03 | 4s | Warm light fills the forest | Light brightens; mushroom blinks |
 
-## Canvas assets and keyframes
-Canvas: CV-MASTER
-Zones: Z-ASSET, Z-S01, Z-S02, Z-S03
-
-### CV-OP-01 Shot S01 blend
+## Per-shot execution cards
+### S01: Z-S01 -> IMG-S01 -> VID-S01
+#### Canvas keyframe
+Operation: CV-OP-01
 Input assets: ASSET-CHAR-A, ASSET-SCENE-A
-Operation: blend
+Type: blend
 Export: IMG-S01
 
-## VID-S01
+#### Video generation
+Task: VID-S01
 Use image: IMG-S01
 Copy prompt: ...
 Fallback: lock the camera and animate only the tail light.
+```
+
+After S01, reply:
+
+```text
+VID-S01 complete, continue
 ```
 
 See the complete, final-format examples:
@@ -185,6 +192,8 @@ See the complete, final-format examples:
 - [10-second pixel-art Jimeng package](ai-animation-director/examples/pixel-10s-3shots-jimeng.md)
 - [30-second Chinese ink Jimeng package](ai-animation-director/examples/ink-30s-3shots-jimeng.md)
 - [Jimeng prompts-only package](ai-animation-director/examples/prompts-only-jimeng.md)
+- [Continue after a keyframe export](ai-animation-director/examples/continue-after-img-s01.md)
+- [Retry one failed video step](ai-animation-director/examples/continue-after-video-failure.md)
 
 ## Production workflow
 

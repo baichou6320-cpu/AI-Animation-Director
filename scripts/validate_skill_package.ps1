@@ -35,6 +35,7 @@ Require-File (Join-Path $skill "prompts/quick_package_router.md")
 Require-File (Join-Path $skill "prompts/canvas_workflow_builder.md")
 Require-File (Join-Path $skill "templates/jimeng-quick-package.md")
 Require-File (Join-Path $skill "templates/jimeng-canvas-package.md")
+Require-File (Join-Path $skill "templates/jimeng-continue-card.md")
 Require-File (Join-Path $skill "references/workflow.md")
 Require-File (Join-Path $skill "references/jimeng-canvas.md")
 Require-Dir (Join-Path $skill "examples")
@@ -72,7 +73,7 @@ foreach ($example in $examples) {
         }
     }
     elseif ($example.Name -match 'jimeng') {
-        foreach ($term in @('CV-MASTER', 'CV-OP-', 'Z-S01')) {
+        foreach ($term in @('CV-MASTER', 'CV-OP-', 'Z-S01 -> IMG-S01 -> VID-S01')) {
             if (-not $text.Contains($term)) {
                 $failures.Add("$($example.Name): missing canvas term $term.")
             }
@@ -99,17 +100,45 @@ if (Test-Path -LiteralPath $quickTemplate -PathType Leaf) {
 $canvasTemplate = Join-Path $skill 'templates/jimeng-canvas-package.md'
 if (Test-Path -LiteralPath $canvasTemplate -PathType Leaf) {
     $text = Get-Content -LiteralPath $canvasTemplate -Encoding UTF8 -Raw
-    foreach ($term in @('CV-MASTER', 'Z-ASSET', 'CV-OP-01', 'IMG-S01', 'VID-S01', '```text')) {
+    foreach ($term in @('layout: per-shot-execution-cards', 'CV-MASTER', 'Z-ASSET', 'Z-S01 -> IMG-S01 -> VID-S01', 'CV-OP-01', 'IMG-S01', 'VID-S01', '```text')) {
         if (-not $text.Contains($term)) {
             $failures.Add("jimeng-canvas-package.md missing term: $term")
         }
     }
 }
 
+$continueTemplate = Join-Path $skill 'templates/jimeng-continue-card.md'
+if (Test-Path -LiteralPath $continueTemplate -PathType Leaf) {
+    $text = Get-Content -LiteralPath $continueTemplate -Encoding UTF8 -Raw
+    foreach ($term in @('delivery_mode: continue', 'next_action: single', '```text')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("jimeng-continue-card.md missing term: $term")
+        }
+    }
+}
+
+$continueExamples = Get-ChildItem -Path (Join-Path $skill 'examples') -Filter 'continue-*.md' -File -ErrorAction SilentlyContinue
+if ($continueExamples.Count -lt 2) {
+    $failures.Add('Expected at least 2 Continue Mode examples.')
+}
+foreach ($continueExample in $continueExamples) {
+    $text = Get-Content -LiteralPath $continueExample.FullName -Encoding UTF8 -Raw
+    foreach ($term in @('delivery_mode: continue', 'next_action: single')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("$($continueExample.Name) missing term: $term")
+        }
+    }
+    $vidIds = [regex]::Matches($text, 'VID-S\d{2}') | ForEach-Object { $_.Value } | Select-Object -Unique
+    $imgIds = [regex]::Matches($text, 'IMG-S\d{2}') | ForEach-Object { $_.Value } | Select-Object -Unique
+    if ($vidIds.Count -gt 1 -or $imgIds.Count -gt 1) {
+        $failures.Add("$($continueExample.Name) must contain only one current shot.")
+    }
+}
+
 $router = Join-Path $skill 'prompts/quick_package_router.md'
 if (Test-Path -LiteralPath $router -PathType Leaf) {
     $text = Get-Content -LiteralPath $router -Encoding UTF8 -Raw
-    foreach ($term in @('delivery_mode', 'canvas_mode', 'prompt_assets_only', 'routing_reason', 'handoff_notes.to_output_composer')) {
+    foreach ($term in @('delivery_mode', 'Continue Mode', 'execution_state', 'canvas_mode', 'prompt_assets_only', 'routing_reason', 'handoff_notes.to_output_composer')) {
         if (-not $text.Contains($term)) {
             $failures.Add("quick_package_router.md missing routing guard: $term")
         }
@@ -119,7 +148,7 @@ if (Test-Path -LiteralPath $router -PathType Leaf) {
 $composer = Join-Path $skill 'prompts/output_composer.md'
 if (Test-Path -LiteralPath $composer -PathType Leaf) {
     $text = Get-Content -LiteralPath $composer -Encoding UTF8 -Raw
-    foreach ($term in @('quick_package_router', 'delivery_mode', 'canvas_mode', 'prompts_only', 'CV-OP-01', '```text')) {
+    foreach ($term in @('quick_package_router', 'delivery_mode', 'Continue Mode', 'Z-S01 -> IMG-S01 -> VID-S01', 'canvas_mode', 'prompts_only', 'CV-OP-01', '```text')) {
         if (-not $text.Contains($term)) {
             $failures.Add("output_composer.md missing delivery guard: $term")
         }

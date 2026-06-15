@@ -100,17 +100,20 @@ canvas_plan:
     - operation_id: CV-OP-01
       canvas_id: CV-MASTER
       zone_id: Z-S01
+      depends_on: [ASSET-CHAR-A, ASSET-SCENE-A]
       source_assets: [ASSET-CHAR-A, ASSET-SCENE-A]
       operation_type: arrange
       prompt: ""
       checkpoints: []
       fallback: ""
       export_id: IMG-S01
+      status: pending
   exports:
     - export_id: IMG-S01
       canvas_id: CV-MASTER
       zone_id: Z-S01
       used_by: VID-S01
+      status: pending
 ```
 
 所有 ID 使用大写稳定编号：
@@ -227,6 +230,22 @@ Quick、Standard 和 Full 模式中的画布操作统一使用：
 
 不需要提示词的操作省略“操作提示词”代码块。
 
+## 制作进度更新
+
+每次用户报告执行结果后更新 `execution_state`：
+
+- “素材好了/已导入”：把对应 `ASSET-*` 或 `IMG-REF` 加入 `completed_assets`。
+- “CV-OP-xx 完成”：把操作状态改为 `completed`，再检查是否可以导出。
+- “IMG-Sxx 已导出”：把导出状态改为 `completed`，下一动作通常是 `VID-Sxx`。
+- “VID-Sxx 完成”：把视频加入 `completed_steps`，下一动作进入下一个未完成镜头。
+- “某一步失败”：记录 `failed_step`，下一动作保持当前步骤并输出更保守的 fallback。
+
+依赖顺序固定为：
+
+`ASSET-* / IMG-REF -> CV-OP-* -> IMG-Sxx -> VID-Sxx`
+
+不得跳过依赖，也不得因为用户只说“继续”而把所有后续步骤一次性展开。
+
 ## 输出结构
 
 ### Canvas Strategy
@@ -275,7 +294,7 @@ Quick、Standard 和 Full 模式中的画布操作统一使用：
 
 给输出编排模块：
 
-- 即梦 Quick、Standard、Full 使用“画布资产与关键帧区”替换“即梦生图复制区”。
+- 即梦 Quick 使用逐镜头执行卡串联画布关键帧和视频任务；Standard、Full 可保留更完整的画布计划。
 - `Prompts Only` 不输出画布布局和操作卡，只输出按用途分类的 `IMG-*` 提示词。
 - 不重复输出一套完整生图章节和一套画布章节。
 
