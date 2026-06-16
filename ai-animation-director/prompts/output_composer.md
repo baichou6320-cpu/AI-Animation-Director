@@ -24,6 +24,8 @@
 - `visible_sections`
 - `shot_id_range`
 - `canvas_mode`
+- `execution_state`
+- `project_state`
 - `handoff_notes.to_output_composer`
 
 如果 `delivery_mode` 缺失，先调用 `quick_package_router`，不要在本模块内部根据片长、镜头数或平台自行猜测。
@@ -50,15 +52,28 @@
 
 用于用户已经开始制作后的续接回复。读取 `execution_state.next_action`，只输出当前动作卡。
 
-使用 `templates/jimeng-continue-card.md`。
+正常续接使用 `templates/jimeng-continue-card.md`。失败修复使用 `templates/failure-diagnosis-card.md`。
 
-固定结构：
+子模式：
+
+- `next_step`: 当前步骤没有失败，只输出下一步卡片。
+- `failure_repair`: 用户报告失败、漂移、变形、过曝、审核失败或超时，只输出失败诊断卡。
+
+`next_step` 固定结构：
 
 1. `当前进度`：一行列出最近完成项。
 2. `下一步`：只写一个 `ASSET-*`、`CV-OP-*`、`IMG-*` 或 `VID-*` 动作。
 3. `复制提示词`：仅当当前动作需要提示词时显示一个 `text` 代码块。
 4. `完成检查`：最多 3 项。
 5. `失败后改法`：只给一个保守版本。
+
+`failure_repair` 固定结构：
+
+1. `失败步骤`：只写当前失败编号。
+2. `失败类型`：使用稳定枚举。
+3. `可见症状`、`可能原因`、`修复策略`。
+4. `重试提示词`：一个 `text` 代码块。
+5. `状态更新`：一个短 `json` 代码块，记录 `failed_step`、`failure_records`、`next_action`。
 
 禁止重复项目设定、全局锚点、镜头表、已完成提示词、后续全部镜头和通用风险清单。
 
@@ -78,6 +93,7 @@
 3. 素材准备。
 4. 逐镜头执行卡。
 5. 失败修正。
+6. 项目状态。
 
 ### Standard Mode
 
@@ -154,6 +170,7 @@ Quick Mode 和 Prompts Only 禁止输出：
 - 可复制视频提示词。
 - 生成顺序。
 - 最重要 3 条失败修正。
+- Quick Mode 的短 `project_state` JSON，除非用户明确要求只要提示词。
 
 压缩方式：
 
@@ -180,6 +197,8 @@ Quick Mode 必须让用户不用读完整段落也能执行：
 - 如果用户说“只要即梦提示词”，省略一句话设定、镜头表、画布布局和操作卡，只输出全局锚点、按画布用途分类的生图复制区、视频复制区、失败修正。
 - 每张“逐镜头执行卡”按真实执行顺序排列：画布区域 -> 必要操作 -> 导出 `IMG-Sxx` -> 使用 `IMG-Sxx` 生成 `VID-Sxx`。
 - 不要把所有 `CV-OP-*` 与所有 `VID-Sxx` 分成两个相距很远的大章节。
+- 用户要求保存状态，或 Quick Mode 首次输出时，使用 `templates/project-state.json` 的短结构。
+- `project_state` 是用户可复制的恢复信息，不是内部 `Project Packet`。
 
 ## 画布压缩规则
 
@@ -226,6 +245,8 @@ Quick Mode 要短，但不能牺牲可生成性：
 - `VID-Sxx` 的复制提示词只能描述该镜头，不要串入其他镜头动作。
 - `VID-Sxx` 只保留一个主要主体动作和一个主要摄影机动作。
 - 如果某镜头建议首尾帧，仍需保留 `IMG-Sxx` 作为首帧；尾帧可写在该镜头提示词或失败后改法里，不新增无编号资产。
+- `project_state` 必须是可解析 JSON，且包含 `state_type`、`shots`、`completed_steps`、`current_step` 和 `next_action`。
+- Prompts Only 不默认输出 `project_state`，除非用户明确要求保存状态。
 
 ## Quick Mode 输出格式
 
@@ -288,6 +309,22 @@ Quick Mode 要短，但不能牺牲可生成性：
 - [最高风险 1]：[最短修正方式]
 - [最高风险 2]：[最短修正方式]
 - [最高风险 3]：[最短修正方式]
+
+## 6. 项目状态（复制保存，之后可粘贴继续）
+```json
+{
+  "schema_version": 1,
+  "state_type": "ai_animation_director_project_state",
+  "project": {"title": "[项目名]", "platform": "jimeng", "aspect_ratio": "[画幅]"},
+  "shots": ["S01", "S02", "S03"],
+  "completed_assets": [],
+  "completed_steps": [],
+  "current_step": "IMG-REF",
+  "failed_step": null,
+  "failure_records": [],
+  "next_action": "IMG-REF"
+}
+```
 ````
 
 ## Continue Mode 输出格式
@@ -310,6 +347,42 @@ Quick Mode 要短，但不能牺牲可生成性：
 
 失败后改法：[一个更保守的版本]
 完成后回复：`VID-S01 完成，继续`
+````
+
+## Failure Repair 输出格式
+
+````markdown
+# 失败诊断：重试当前步骤
+
+失败步骤：`VID-S02`
+失败类型：`deformation`
+
+## 可见症状
+- [用户看到的问题]
+
+## 可能原因
+- [原因]
+
+## 修复策略
+- [保留项]
+- [简化项]
+- [只改变一件事]
+
+## 重试提示词
+使用图片：`IMG-S02`
+复制提示词：
+```text
+[只放本次重试提示词]
+```
+
+## 状态更新
+```json
+{
+  "failed_step": "VID-S02",
+  "failure_records": [{"step": "VID-S02", "type": "deformation", "symptom": "[short symptom]"}],
+  "next_action": "retry VID-S02"
+}
+```
 ````
 
 ## Prompts Only 输出格式

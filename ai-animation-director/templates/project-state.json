@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "state_type": "ai_animation_director_project_state",
+  "project": {"title": "项目名", "platform": "jimeng", "aspect_ratio": "9:16"},
+  "shots": ["S01", "S02", "S03"],
+  "completed_assets": ["IMG-REF"],
+  "completed_steps": [],
+  "current_step": "CV-OP-01",
+  "failed_step": null,
+  "failure_records": [],
+  "next_action": "CV-OP-01"
+}

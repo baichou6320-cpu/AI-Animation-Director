@@ -129,3 +129,19 @@
 - [最高风险 1]：[最短修正方式]
 - [最高风险 2]：[最短修正方式]
 - [最高风险 3]：[最短修正方式]
+
+## 6. 项目状态（复制保存，之后可粘贴继续）
+```json
+{
+  "schema_version": 1,
+  "state_type": "ai_animation_director_project_state",
+  "project": {"title": "[项目名]", "platform": "jimeng", "aspect_ratio": "[画幅]"},
+  "shots": ["S01", "S02", "S03"],
+  "completed_assets": [],
+  "completed_steps": [],
+  "current_step": "IMG-REF",
+  "failed_step": null,
+  "failure_records": [],
+  "next_action": "IMG-REF"
+}
+```

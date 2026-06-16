@@ -187,6 +187,22 @@ After S01, reply:
 VID-S01 complete, continue
 ```
 
+## Save State And Diagnose Failures
+
+Quick Mode ends with a small `project_state` JSON block. Save it, then paste it into a later thread with:
+
+```text
+continue from this state
+```
+
+If a step fails, describe the visible problem:
+
+```text
+VID-S02 failed; the character drifted and the dew drop changed shape.
+```
+
+The Skill will switch to a failure diagnosis card with the failure type, likely cause, repair strategy, retry prompt, and state update.
+
 See the complete, final-format examples:
 
 - [10-second pixel-art Jimeng package](ai-animation-director/examples/pixel-10s-3shots-jimeng.md)
@@ -194,6 +210,8 @@ See the complete, final-format examples:
 - [Jimeng prompts-only package](ai-animation-director/examples/prompts-only-jimeng.md)
 - [Continue after a keyframe export](ai-animation-director/examples/continue-after-img-s01.md)
 - [Retry one failed video step](ai-animation-director/examples/continue-after-video-failure.md)
+- [Save a pixel project state](ai-animation-director/examples/state-save-pixel-project.md)
+- [Diagnose character drift](ai-animation-director/examples/failure-diagnosis-character-drift.md)
 
 ## Production workflow
 

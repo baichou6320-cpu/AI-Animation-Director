@@ -128,3 +128,19 @@
 - 像素风变写实：强化“复古像素风、低分辨率游戏画面、清晰像素边缘”。
 - 角色漂移：每条提示词重复“红帽固定 3 个白点”和“暖黄色圆尾灯”。
 - 光效过曝：改为“柔和小光晕，只照亮局部，不覆盖轮廓”。
+
+## 6. 项目状态（复制保存，之后可粘贴继续）
+```json
+{
+  "schema_version": 1,
+  "state_type": "ai_animation_director_project_state",
+  "project": {"title": "露水小灯", "platform": "jimeng", "aspect_ratio": "9:16"},
+  "shots": ["S01", "S02", "S03"],
+  "completed_assets": [],
+  "completed_steps": [],
+  "current_step": "IMG-REF",
+  "failed_step": null,
+  "failure_records": [],
+  "next_action": "IMG-REF"
+}
+```

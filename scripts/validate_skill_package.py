@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -29,6 +30,8 @@ REQUIRED_FILES = [
     SKILL / "templates/jimeng-quick-package.md",
     SKILL / "templates/jimeng-canvas-package.md",
     SKILL / "templates/jimeng-continue-card.md",
+    SKILL / "templates/project-state.json",
+    SKILL / "templates/failure-diagnosis-card.md",
     SKILL / "references/workflow.md",
     SKILL / "references/jimeng-canvas.md",
 ]
@@ -36,6 +39,13 @@ REQUIRED_FILES = [
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def json_blocks(text: str) -> list[dict]:
+    blocks: list[dict] = []
+    for match in re.finditer(r"```json\r?\n(.*?)\r?\n```", text, re.S):
+        blocks.append(json.loads(match.group(1)))
+    return blocks
 
 
 def main() -> int:
@@ -59,21 +69,23 @@ def main() -> int:
         text = read_text(example)
         is_jimeng = "jimeng" in example.name
         is_prompts_only = example.name == "prompts-only-jimeng.md"
+        is_state_example = example.name.startswith("state-save-")
 
         if is_jimeng and "IMG-REF" not in text:
             failures.append(f"{example.name}: Jimeng example missing IMG-REF.")
 
-        for match in re.finditer(r"VID-S(\d{2})", text):
-            shot = match.group(1)
-            required_image = f"`IMG-S{shot}`"
-            if required_image not in text:
-                failures.append(f"{example.name}: VID-S{shot} does not reference IMG-S{shot}.")
-            if is_jimeng and not is_prompts_only:
-                export_pattern = rf"导出为：`IMG-S{shot}`"
-                if not re.search(export_pattern, text):
-                    failures.append(
-                        f"{example.name}: canvas workflow does not export IMG-S{shot}."
-                    )
+        if not is_state_example:
+            for match in re.finditer(r"VID-S(\d{2})", text):
+                shot = match.group(1)
+                required_image = f"`IMG-S{shot}`"
+                if required_image not in text:
+                    failures.append(f"{example.name}: VID-S{shot} does not reference IMG-S{shot}.")
+                if is_jimeng and not is_prompts_only:
+                    export_pattern = rf"导出为：`IMG-S{shot}`"
+                    if not re.search(export_pattern, text):
+                        failures.append(
+                            f"{example.name}: canvas workflow does not export IMG-S{shot}."
+                        )
 
         prompt_labels = len(
             re.findall(r"(?:复制提示词|素材提示词|操作提示词)：", text)
@@ -111,6 +123,8 @@ def main() -> int:
             failures.append(
                 "prompts-only-jimeng.md should not include one-line setup or shot table sections."
             )
+        if "project_state" in text or "ai_animation_director_project_state" in text:
+            failures.append("prompts-only-jimeng.md must not default to project state.")
 
     quick_template = SKILL / "templates/jimeng-quick-package.md"
     if quick_template.is_file():
@@ -172,6 +186,45 @@ def main() -> int:
             if term not in text:
                 failures.append(f"jimeng-continue-card.md missing term: {term}")
 
+    state_template = SKILL / "templates/project-state.json"
+    if state_template.is_file():
+        try:
+            state = json.loads(read_text(state_template))
+        except json.JSONDecodeError as exc:
+            failures.append(f"project-state.json is not valid JSON: {exc}")
+        else:
+            for key in [
+                "schema_version",
+                "state_type",
+                "project",
+                "shots",
+                "completed_steps",
+                "current_step",
+                "next_action",
+            ]:
+                if key not in state:
+                    failures.append(f"project-state.json missing key: {key}")
+            if state.get("state_type") != "ai_animation_director_project_state":
+                failures.append("project-state.json has wrong state_type.")
+
+    failure_template = SKILL / "templates/failure-diagnosis-card.md"
+    if failure_template.is_file():
+        text = read_text(failure_template)
+        for term in [
+            "template: failure-diagnosis-card",
+            "失败步骤",
+            "失败类型",
+            "修复策略",
+            "重试提示词",
+            "状态更新",
+            "character_drift",
+            "lighting_error",
+            "generation_blocked",
+            "```json",
+        ]:
+            if term not in text:
+                failures.append(f"failure-diagnosis-card.md missing term: {term}")
+
     continue_examples = sorted((SKILL / "examples").glob("continue-*.md"))
     if len(continue_examples) < 2:
         failures.append("Expected at least 2 Continue Mode examples.")
@@ -198,6 +251,40 @@ def main() -> int:
                     f"{continue_example.name} must not repeat package content: {forbidden}"
                 )
 
+    state_example = SKILL / "examples/state-save-pixel-project.md"
+    if state_example.is_file():
+        text = read_text(state_example)
+        try:
+            blocks = json_blocks(text)
+        except json.JSONDecodeError as exc:
+            failures.append(f"state-save-pixel-project.md has invalid JSON: {exc}")
+        else:
+            if len(blocks) != 1:
+                failures.append("state-save-pixel-project.md must have one JSON state block.")
+            elif blocks[0].get("state_type") != "ai_animation_director_project_state":
+                failures.append("state-save-pixel-project.md has wrong state_type.")
+
+    failure_example = SKILL / "examples/failure-diagnosis-character-drift.md"
+    if failure_example.is_file():
+        text = read_text(failure_example)
+        for term in [
+            "continue_submode: failure_repair",
+            "失败步骤：`VID-S02`",
+            "失败类型：`character_drift`",
+            "重试提示词",
+            "状态更新",
+            "retry VID-S02",
+        ]:
+            if term not in text:
+                failures.append(f"failure-diagnosis-character-drift.md missing term: {term}")
+        try:
+            blocks = json_blocks(text)
+        except json.JSONDecodeError as exc:
+            failures.append(f"failure-diagnosis-character-drift.md has invalid JSON: {exc}")
+        else:
+            if not blocks or blocks[-1].get("failed_step") != "VID-S02":
+                failures.append("failure-diagnosis-character-drift.md must update failed_step.")
+
     router = SKILL / "prompts/quick_package_router.md"
     composer = SKILL / "prompts/output_composer.md"
     if router.is_file():
@@ -208,6 +295,8 @@ def main() -> int:
             "delivery_mode",
             "Continue Mode",
             "execution_state",
+            "project_state",
+            "failure_repair",
             "canvas_mode",
             "prompt_assets_only",
         ]:
@@ -221,6 +310,8 @@ def main() -> int:
             "路由结果是唯一事实来源",
             "Continue Mode",
             "逐镜头执行卡",
+            "project_state",
+            "failure-diagnosis-card",
             "canvas_mode",
             "```text",
         ]:

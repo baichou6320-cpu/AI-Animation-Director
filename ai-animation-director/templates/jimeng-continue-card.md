@@ -22,3 +22,13 @@
 失败后改法：[一个更保守的版本]
 
 完成后回复：`[当前编号] 完成，继续`
+
+状态更新：
+```json
+{
+  "completed_steps": ["[当前编号]"],
+  "current_step": "[下一编号]",
+  "failed_step": null,
+  "next_action": "[下一编号]"
+}
+```

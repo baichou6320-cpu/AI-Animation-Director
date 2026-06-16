@@ -193,6 +193,22 @@ Skill 会把完整制作思考压缩成下面这种执行包：
 VID-S01 完成，继续
 ```
 
+## 保存状态与失败诊断
+
+Quick Mode 会在末尾给出一个短小的 `project_state` JSON。把它复制保存，换线程或隔天继续时粘贴回来即可：
+
+```text
+继续这个状态
+```
+
+如果某一步失败，直接描述可见问题：
+
+```text
+VID-S02 失败，角色变形，露水也变了
+```
+
+Skill 会进入失败诊断卡，只返回：失败类型、可能原因、修复策略、重试提示词和状态更新。
+
 ## 完整示例
 
 仓库内的样例全部使用最终用户可见格式，不包含内部推理：
@@ -202,6 +218,8 @@ VID-S01 完成，继续
 - [只要即梦提示词](ai-animation-director/examples/prompts-only-jimeng.md)
 - [关键帧导出后的下一步](ai-animation-director/examples/continue-after-img-s01.md)
 - [单个视频步骤失败后重试](ai-animation-director/examples/continue-after-video-failure.md)
+- [保存像素项目状态](ai-animation-director/examples/state-save-pixel-project.md)
+- [角色漂移失败诊断](ai-animation-director/examples/failure-diagnosis-character-drift.md)
 
 ## 从想法到成片的路径
 

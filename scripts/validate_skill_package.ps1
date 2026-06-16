@@ -36,6 +36,8 @@ Require-File (Join-Path $skill "prompts/canvas_workflow_builder.md")
 Require-File (Join-Path $skill "templates/jimeng-quick-package.md")
 Require-File (Join-Path $skill "templates/jimeng-canvas-package.md")
 Require-File (Join-Path $skill "templates/jimeng-continue-card.md")
+Require-File (Join-Path $skill "templates/project-state.json")
+Require-File (Join-Path $skill "templates/failure-diagnosis-card.md")
 Require-File (Join-Path $skill "references/workflow.md")
 Require-File (Join-Path $skill "references/jimeng-canvas.md")
 Require-Dir (Join-Path $skill "examples")
@@ -47,17 +49,20 @@ if ($examples.Count -lt 3) {
 
 foreach ($example in $examples) {
     $text = Get-Content -LiteralPath $example.FullName -Encoding UTF8 -Raw
+    $isStateExample = $example.Name.StartsWith('state-save-')
 
     if ($example.Name -match "jimeng" -and $text -notmatch "IMG-REF") {
         $failures.Add("$($example.Name): Jimeng example missing IMG-REF.")
     }
 
-    $vidMatches = [regex]::Matches($text, "VID-S(\d{2})")
-    foreach ($match in $vidMatches) {
-        $shot = $match.Groups[1].Value
-        $requiredImage = [char]96 + "IMG-S" + $shot + [char]96
-        if (-not $text.Contains($requiredImage)) {
-            $failures.Add("$($example.Name): VID-S$shot does not reference IMG-S$shot.")
+    if (-not $isStateExample) {
+        $vidMatches = [regex]::Matches($text, "VID-S(\d{2})")
+        foreach ($match in $vidMatches) {
+            $shot = $match.Groups[1].Value
+            $requiredImage = [char]96 + "IMG-S" + $shot + [char]96
+            if (-not $text.Contains($requiredImage)) {
+                $failures.Add("$($example.Name): VID-S$shot does not reference IMG-S$shot.")
+            }
         }
     }
 
@@ -70,6 +75,9 @@ foreach ($example in $examples) {
     if ($example.Name -eq 'prompts-only-jimeng.md') {
         if ($text.Contains('CV-OP-')) {
             $failures.Add('prompts-only-jimeng.md must not include canvas operation cards.')
+        }
+        if ($text.Contains('ai_animation_director_project_state')) {
+            $failures.Add('prompts-only-jimeng.md must not default to project state.')
         }
     }
     elseif ($example.Name -match 'jimeng') {
@@ -117,6 +125,34 @@ if (Test-Path -LiteralPath $continueTemplate -PathType Leaf) {
     }
 }
 
+$stateTemplate = Join-Path $skill 'templates/project-state.json'
+if (Test-Path -LiteralPath $stateTemplate -PathType Leaf) {
+    try {
+        $state = Get-Content -LiteralPath $stateTemplate -Encoding UTF8 -Raw | ConvertFrom-Json
+        foreach ($property in @('schema_version', 'state_type', 'project', 'shots', 'completed_steps', 'current_step', 'next_action')) {
+            if (-not ($state.PSObject.Properties.Name -contains $property)) {
+                $failures.Add("project-state.json missing key: $property")
+            }
+        }
+        if ($state.state_type -ne 'ai_animation_director_project_state') {
+            $failures.Add('project-state.json has wrong state_type.')
+        }
+    }
+    catch {
+        $failures.Add('project-state.json is not valid JSON.')
+    }
+}
+
+$failureTemplate = Join-Path $skill 'templates/failure-diagnosis-card.md'
+if (Test-Path -LiteralPath $failureTemplate -PathType Leaf) {
+    $text = Get-Content -LiteralPath $failureTemplate -Encoding UTF8 -Raw
+    foreach ($term in @('template: failure-diagnosis-card', 'continue_submode: failure_repair', 'character_drift', 'lighting_error', 'generation_blocked', '```json')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("failure-diagnosis-card.md missing term: $term")
+        }
+    }
+}
+
 $continueExamples = Get-ChildItem -Path (Join-Path $skill 'examples') -Filter 'continue-*.md' -File -ErrorAction SilentlyContinue
 if ($continueExamples.Count -lt 2) {
     $failures.Add('Expected at least 2 Continue Mode examples.')
@@ -135,10 +171,28 @@ foreach ($continueExample in $continueExamples) {
     }
 }
 
+$stateExample = Join-Path $skill 'examples/state-save-pixel-project.md'
+if (Test-Path -LiteralPath $stateExample -PathType Leaf) {
+    $text = Get-Content -LiteralPath $stateExample -Encoding UTF8 -Raw
+    if (-not $text.Contains('ai_animation_director_project_state')) {
+        $failures.Add('state-save-pixel-project.md missing state marker.')
+    }
+}
+
+$failureExample = Join-Path $skill 'examples/failure-diagnosis-character-drift.md'
+if (Test-Path -LiteralPath $failureExample -PathType Leaf) {
+    $text = Get-Content -LiteralPath $failureExample -Encoding UTF8 -Raw
+    foreach ($term in @('continue_submode: failure_repair', 'VID-S02', 'character_drift', 'retry VID-S02', '```json')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("failure-diagnosis-character-drift.md missing term: $term")
+        }
+    }
+}
+
 $router = Join-Path $skill 'prompts/quick_package_router.md'
 if (Test-Path -LiteralPath $router -PathType Leaf) {
     $text = Get-Content -LiteralPath $router -Encoding UTF8 -Raw
-    foreach ($term in @('delivery_mode', 'Continue Mode', 'execution_state', 'canvas_mode', 'prompt_assets_only', 'routing_reason', 'handoff_notes.to_output_composer')) {
+    foreach ($term in @('delivery_mode', 'Continue Mode', 'execution_state', 'project_state', 'failure_repair', 'canvas_mode', 'prompt_assets_only', 'routing_reason', 'handoff_notes.to_output_composer')) {
         if (-not $text.Contains($term)) {
             $failures.Add("quick_package_router.md missing routing guard: $term")
         }
@@ -148,7 +202,7 @@ if (Test-Path -LiteralPath $router -PathType Leaf) {
 $composer = Join-Path $skill 'prompts/output_composer.md'
 if (Test-Path -LiteralPath $composer -PathType Leaf) {
     $text = Get-Content -LiteralPath $composer -Encoding UTF8 -Raw
-    foreach ($term in @('quick_package_router', 'delivery_mode', 'Continue Mode', 'Z-S01 -> IMG-S01 -> VID-S01', 'canvas_mode', 'prompts_only', 'CV-OP-01', '```text')) {
+    foreach ($term in @('quick_package_router', 'delivery_mode', 'Continue Mode', 'project_state', 'failure-diagnosis-card', 'Z-S01 -> IMG-S01 -> VID-S01', 'canvas_mode', 'prompts_only', 'CV-OP-01', '```text')) {
         if (-not $text.Contains($term)) {
             $failures.Add("output_composer.md missing delivery guard: $term")
         }

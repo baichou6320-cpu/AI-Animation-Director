@@ -17,6 +17,8 @@
 - 输出语言：默认中文；用户明确要求英文时再切换。
 - 画布：目标平台是否为即梦，用户是否明确只要提示词。
 - 制作进度：是否已经生成/导入素材，完成了哪个 `IMG-*`、`VID-*` 或 `CV-OP-*`，当前是否有失败步骤。
+- 状态：是否粘贴了 `project_state` JSON，或要求保存/恢复状态。
+- 失败：是否出现角色漂移、风格漂移、动作错误、镜头错误、变形、构图错误、光效过曝、时长不合适、审核失败、生成超时。
 
 ## 唯一路由规则
 
@@ -26,6 +28,7 @@
    - 触发词：只要提示词、只给即梦提示词、不要方案、不要解释、复制提示词。
    - 输出：全局锚点、按画布用途分类的素材提示词区、视频复制区、失败修正。
    - `canvas_mode`: `prompt_assets_only`。不输出画布布局和操作卡。
+   - 如果用户同时明确要求“保存状态”，允许附加 `project_state`；否则不输出状态块。
    - 不输出：一句话设定、镜头表、导演方案、故事脚本、配乐。
 
 2. `Full Mode`
@@ -35,10 +38,11 @@
    - 注意：如果用户同时说“只要提示词”和“完整制作包”，优先追问；无法追问时按 `Prompts Only`，因为它更贴近直接使用。
 
 3. `Continue Mode`
-   - 触发条件：已有项目上下文，用户报告完成、失败、重做或要求继续下一步，且没有要求重新输出完整方案。
-   - 常见表达：素材好了、角色图已导入、S01 完成、IMG-S02 已导出、VID-S02 失败、继续、下一步、从 S03 接着做。
+   - 触发条件：已有项目上下文，用户粘贴 `project_state`，报告完成、失败、重做或要求继续下一步，且没有要求重新输出完整方案。
+   - 常见表达：素材好了、角色图已导入、S01 完成、IMG-S02 已导出、VID-S02 失败、继续、下一步、从 S03 接着做、按这个状态恢复。
    - `delivery_mode`: `continue`。
-   - 输出：当前状态、唯一下一动作、当前复制提示词、完成检查、失败后改法。
+   - `continue_submode`: 正常继续为 `next_step`；报告失败或要求诊断时为 `failure_repair`。
+   - 输出：当前状态、唯一下一动作、当前复制提示词、完成检查、失败后改法；失败时输出诊断卡。
    - 不输出：完整项目设定、完整镜头表、已完成步骤、未来所有步骤。
 
 4. `Quick Mode`
@@ -80,9 +84,41 @@
   - `completed_assets`: 已完成或已导入的 `ASSET-*`、`IMG-REF`。
   - `completed_steps`: 已完成的 `CV-OP-*`、`IMG-Sxx`、`VID-Sxx`。
   - `failed_step`: 当前失败编号；没有则为 `null`。
+  - `failure_type`: 当前失败类型；没有则为 `null`。
+  - `continue_submode`: `next_step` 或 `failure_repair`。
   - `next_action`: 下一步唯一动作编号。
   - `last_user_update`: 用户本轮进度原文的简短归一化。
+- `project_state`: 仅当用户要求保存状态、粘贴状态恢复，或 Quick Mode 首次交付时更新。
 - `handoff_notes.to_output_composer`: 告诉 `output_composer` 应该使用哪种模式和哪些章节。
+
+## 失败类型枚举
+
+只能使用这些稳定值：
+
+- `character_drift`
+- `style_drift`
+- `motion_error`
+- `camera_error`
+- `deformation`
+- `composition_error`
+- `lighting_error`
+- `duration_mismatch`
+- `generation_blocked`
+- `timeout`
+- `other`
+
+用户表达映射：
+
+- 角色变了、服装变了、帽子点数变了：`character_drift`
+- 风格跑了、变写实、变 3D：`style_drift`
+- 动作不对、没有按提示动：`motion_error`
+- 镜头乱动、推拉摇晃：`camera_error`
+- 手崩了、身体扭曲、露水变形：`deformation`
+- 构图错位、主体太小、裁切错误：`composition_error`
+- 光太爆、太暗、光源错：`lighting_error`
+- 时长不对、节奏太快：`duration_mismatch`
+- 审核失败、生成被拦截：`generation_blocked`
+- 排队失败、生成超时：`timeout`
 
 ## 质量要求
 
@@ -92,6 +128,8 @@
 - 路由结果是最终交付模式的唯一来源；下游模块不得再次按自己的条件判定模式。
 - 即梦的 Quick、Standard、Full 默认启用画布；Prompts Only 只保留画布用途提示词；非即梦项目关闭画布。
 - Continue Mode 必须从已有编号关系推导下一步，不得跳过未完成依赖。例如 `IMG-S01` 未导出时，不得直接让用户执行 `VID-S01`。
+- 如果用户粘贴了 `project_state`，优先从状态恢复，不重新 intake，不重建整包。
+- `failure_repair` 不输出整包，只输出失败诊断卡、重试提示词和状态更新。
 - 用户只说“继续”但没有可恢复上下文时，不编造进度；回到最小 intake，询问或默认从素材准备开始。
 - 用户指定镜头数时必须尊重，不得自行增加镜头。
 - 未指定镜头数但片长 10-30 秒时，默认 3-6 镜；每 3-5 秒一个镜头。

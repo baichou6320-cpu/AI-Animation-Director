@@ -128,3 +128,19 @@
 - 水墨变写实：加强“宣纸纹理、淡墨线条、墨色扩散、大片留白”。
 - 动作过复杂：删除手部细节，只保留“纸灯缓慢漂开”。
 - 画面太满：加入“大片留白、远景、低元素密度、克制构图”。
+
+## 6. 项目状态（复制保存，之后可粘贴继续）
+```json
+{
+  "schema_version": 1,
+  "state_type": "ai_animation_director_project_state",
+  "project": {"title": "江岸纸灯", "platform": "jimeng", "aspect_ratio": "16:9"},
+  "shots": ["S01", "S02", "S03"],
+  "completed_assets": [],
+  "completed_steps": [],
+  "current_step": "IMG-REF",
+  "failed_step": null,
+  "failure_records": [],
+  "next_action": "IMG-REF"
+}
+```
