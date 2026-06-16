@@ -33,6 +33,7 @@ Require-File (Join-Path $skill "agents/openai.yaml")
 Require-File (Join-Path $skill "prompts/output_composer.md")
 Require-File (Join-Path $skill "prompts/quick_package_router.md")
 Require-File (Join-Path $skill "prompts/canvas_workflow_builder.md")
+Require-File (Join-Path $skill "prompts/qa_reviewer.md")
 Require-File (Join-Path $skill "templates/jimeng-quick-package.md")
 Require-File (Join-Path $skill "templates/jimeng-canvas-package.md")
 Require-File (Join-Path $skill "templates/jimeng-continue-card.md")
@@ -215,6 +216,16 @@ if (Test-Path -LiteralPath $canvasBuilder -PathType Leaf) {
     foreach ($term in @('canvas_plan', 'CV-MASTER', 'master_plus_sequences', 'prompt_assets_only', 'generate/import', 'user_upload', 'export')) {
         if (-not $text.Contains($term)) {
             $failures.Add("canvas_workflow_builder.md missing term: $term")
+        }
+    }
+}
+
+$qaReviewer = Join-Path $skill 'prompts/qa_reviewer.md'
+if (Test-Path -LiteralPath $qaReviewer -PathType Leaf) {
+    $text = Get-Content -LiteralPath $qaReviewer -Encoding UTF8 -Raw
+    foreach ($term in @('preflight_check', 'prompt_patch', 'failure_repair', 'continuity_review', 'qa_output: preflight_card', 'project_state', 'character_drift', 'lighting_error', 'Project Packet Updates', 'to_output_composer')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("qa_reviewer.md missing term: $term")
         }
     }
 }

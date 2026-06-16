@@ -59,7 +59,7 @@ description: Create practical AI animation short-film prompt packages and produc
 - `prompts/`: 可组合的工作流提示词模块。每个模块负责一个制作阶段。
 - `references/`: 可按需读取的知识库，包括风格、镜头语言、提示词模板、平台差异和质检表。
 - `templates/`: 稳定输出模板，如 `jimeng-canvas-package.md`、`jimeng-continue-card.md`、`project-state.json`、`failure-diagnosis-card.md`。
-- `examples/`: 验收样例，使用最终输出格式，不包含内部推理，如像素风即梦短包、国风水墨即梦短包、只要提示词模式。
+- `examples/`: 验收样例，使用最终输出格式，不包含内部推理，如像素风即梦短包、国风水墨即梦短包、只要提示词模式和续接/失败样例。
 - `tools/`: 后续可加入轻量校验脚本，用于检查制作包是否缺少关键部分。
 - `scripts/`: 可选执行层，用于把已审核的 manifest 提交给即梦兼容 API、轮询任务并下载结果。
 - `outputs/`: 保存生成用 manifest、图片、视频和执行结果，不把媒体产物写回 prompt 文件。
@@ -312,6 +312,7 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 
 - 检查故事闭合、镜头可生成性、角色一致性、场景一致性、提示词过载、平台适配风险。
 - 给出具体修正：拆镜、降级动作、强化锚点、减少风格词、改变镜头时长或景别。
+- 在 Quick/Continue 场景中只输出生成前自检、局部补丁或失败诊断，不重复整包。
 
 ## Reference 使用规则
 

@@ -27,6 +27,7 @@ REQUIRED_FILES = [
     SKILL / "prompts/output_composer.md",
     SKILL / "prompts/quick_package_router.md",
     SKILL / "prompts/canvas_workflow_builder.md",
+    SKILL / "prompts/qa_reviewer.md",
     SKILL / "templates/jimeng-quick-package.md",
     SKILL / "templates/jimeng-canvas-package.md",
     SKILL / "templates/jimeng-continue-card.md",
@@ -355,6 +356,24 @@ def main() -> int:
             failures.append(
                 f"canvas_workflow_builder.md has unsupported operation types: {unknown_ops}"
             )
+
+    qa_reviewer = SKILL / "prompts/qa_reviewer.md"
+    if qa_reviewer.is_file():
+        text = read_text(qa_reviewer)
+        for term in [
+            "preflight_check",
+            "prompt_patch",
+            "failure_repair",
+            "continuity_review",
+            "生成前自检",
+            "project_state",
+            "character_drift",
+            "lighting_error",
+            "Project Packet Updates",
+            "to_output_composer",
+        ]:
+            if term not in text:
+                failures.append(f"qa_reviewer.md missing term: {term}")
 
     outputs_dir = SKILL / "outputs"
     output_files = [
