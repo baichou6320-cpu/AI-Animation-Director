@@ -18,6 +18,7 @@
 - 画布：目标平台是否为即梦，用户是否明确只要提示词。
 - 制作进度：是否已经生成/导入素材，完成了哪个 `IMG-*`、`VID-*` 或 `CV-OP-*`，当前是否有失败步骤。
 - 状态：是否粘贴了 `project_state` JSON，或要求保存/恢复状态。
+- 改稿：是否要求修改既有制作包、替换某个镜头、改变画幅/风格/片长/平台，并保留其他内容。
 - 失败：是否出现角色漂移、风格漂移、动作错误、镜头错误、变形、构图错误、光效过曝、时长不合适、审核失败、生成超时。
 
 ## 唯一路由规则
@@ -37,7 +38,14 @@
    - 目标平台为即梦时，`canvas_mode`: `enabled`。
    - 注意：如果用户同时说“只要提示词”和“完整制作包”，优先追问；无法追问时按 `Prompts Only`，因为它更贴近直接使用。
 
-3. `Continue Mode`
+3. `Revision Mode`
+   - 触发条件：已有项目上下文或用户粘贴了制作包/`project_state`，并要求“改成、换成、缩短、加一镜、删一镜、只改 S02、其他不变”等非失败类修改。
+   - 失败类表达不走本模式；角色漂移、变形、过曝、失败、超时仍走 `Continue Mode` 的 `failure_repair`。
+   - `delivery_mode`: `revision`。
+   - 输出：改稿类型、影响范围、保留不变、替换提示词、状态更新。
+   - 不输出：完整项目设定、完整镜头表、未受影响镜头。
+
+4. `Continue Mode`
    - 触发条件：已有项目上下文，用户粘贴 `project_state`，报告完成、失败、重做或要求继续下一步，且没有要求重新输出完整方案。
    - 常见表达：素材好了、角色图已导入、S01 完成、IMG-S02 已导出、VID-S02 失败、继续、下一步、从 S03 接着做、按这个状态恢复。
    - `delivery_mode`: `continue`。
@@ -45,7 +53,7 @@
    - 输出：当前状态、唯一下一动作、当前复制提示词、完成检查、失败后改法；失败时输出诊断卡。
    - 不输出：完整项目设定、完整镜头表、已完成步骤、未来所有步骤。
 
-4. `Quick Mode`
+5. `Quick Mode`
    - 条件：片长小于等于 30 秒，且镜头数小于等于 6。
    - 用户说“快速”“先试一下”“短视频”“直接用”时，若没有与片长、镜头数或完整交付要求冲突，也进入 Quick Mode。
    - 用户只指定即梦但片长超过 30 秒或镜头数超过 6 时，不得仅因为平台是即梦而进入 Quick Mode。
@@ -53,13 +61,13 @@
    - 输出：即梦执行包。
    - 目标平台为即梦时，`canvas_mode`: `enabled`。
 
-5. `Standard Mode`
+6. `Standard Mode`
    - 条件：片长为 31-90 秒，或镜头数为 7-12，且没有要求完整团队交接。
    - 平台可以是即梦或其他平台；平台不会覆盖片长和镜头规模判定。
    - 输出：简短项目简报、导演方案摘要、故事结构、锚点、镜头表、生图/视频提示词、声音和风险。
    - 目标平台为即梦时，`canvas_mode`: `enabled`。
 
-6. 默认兜底
+7. 默认兜底
    - 信息不足但看起来是短片创作：默认 15 秒、3 镜头，使用 `Quick Mode`。
    - 片长超过 90 秒或镜头数超过 12，但用户没有要求完整交接：使用 `Standard Mode`，建议分批交付。
    - 信息不足但用户强调“完整/详细”：使用 `Full Mode`。
@@ -75,7 +83,7 @@
 
 输出路由决策时，只更新这些字段：
 
-- `delivery_mode`: `prompts_only`、`continue`、`quick`、`standard`、`full`。
+- `delivery_mode`: `prompts_only`、`revision`、`continue`、`quick`、`standard`、`full`。
 - `visible_sections`: 最终应该显示的章节列表。
 - `shot_id_range`: 例如 `S01-S03`、`S01-S05`。
 - `routing_reason`: 一句话说明命中规则。
@@ -89,6 +97,7 @@
   - `next_action`: 下一步唯一动作编号。
   - `last_user_update`: 用户本轮进度原文的简短归一化。
 - `project_state`: 仅当用户要求保存状态、粘贴状态恢复，或 Quick Mode 首次交付时更新。
+- `revision_state`: 仅当 `delivery_mode=revision` 时更新，包含 `revision_mode`、`affected_ids`、`preserved_ids`、`invalidated_ids` 和 `next_action`。
 - `handoff_notes.to_output_composer`: 告诉 `output_composer` 应该使用哪种模式和哪些章节。
 
 ## 失败类型枚举
@@ -126,6 +135,7 @@
 - 不要因为内部流程完整，就默认输出完整文档。
 - 对即梦短片，优先让用户能复制执行。
 - 路由结果是最终交付模式的唯一来源；下游模块不得再次按自己的条件判定模式。
+- Revision Mode 必须保护未受影响编号，不得为了一个小改重写整包。
 - 即梦的 Quick、Standard、Full 默认启用画布；Prompts Only 只保留画布用途提示词；非即梦项目关闭画布。
 - Continue Mode 必须从已有编号关系推导下一步，不得跳过未完成依赖。例如 `IMG-S01` 未导出时，不得直接让用户执行 `VID-S01`。
 - 如果用户粘贴了 `project_state`，优先从状态恢复，不重新 intake，不重建整包。

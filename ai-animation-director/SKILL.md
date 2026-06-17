@@ -40,6 +40,7 @@ description: Create practical AI animation short-film prompt packages and produc
 - `prompt_assets`: 生图提示词、视频提示词、平台适配版本、首尾帧建议。
 - `canvas_plan`: 即梦画布策略、素材、画布、区域、操作、导出与视频交接关系。
 - `execution_state`: 当前制作进度、已完成资产/镜头、失败步骤和下一动作。
+- `revision_state`: 用户改稿请求、受影响编号、保留编号、失效编号和下一动作。
 - `sound_plan`: 配乐、环境声、音效、旁白节奏。
 - `risk_register`: 风格漂移、角色漂移、复杂动作、平台限制、修正方案。
 - `handoff_notes`: 当前模块给下一个模块的明确要求。
@@ -59,7 +60,7 @@ description: Create practical AI animation short-film prompt packages and produc
 - `prompts/`: 可组合的工作流提示词模块。每个模块负责一个制作阶段。
 - `references/`: 可按需读取的知识库，包括风格、镜头语言、提示词模板、平台差异和质检表。
 - `templates/`: 稳定输出模板，如 `jimeng-canvas-package.md`、`jimeng-continue-card.md`、`project-state.json`、`failure-diagnosis-card.md`。
-- `examples/`: 验收样例，使用最终输出格式，不包含内部推理，如像素风即梦短包、国风水墨即梦短包、只要提示词模式和续接/失败样例。
+- `examples/`: 验收样例，使用最终输出格式，不包含内部推理，如像素风即梦短包、国风水墨即梦短包、只要提示词模式和续接/失败/改稿样例。
 - `tools/`: 后续可加入轻量校验脚本，用于检查制作包是否缺少关键部分。
 - `scripts/`: 可选执行层，用于把已审核的 manifest 提交给即梦兼容 API、轮询任务并下载结果。
 - `outputs/`: 保存生成用 manifest、图片、视频和执行结果，不把媒体产物写回 prompt 文件。
@@ -277,8 +278,25 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 
 - 明确 `delivery_mode`、`visible_sections`、`shot_id_range`、`canvas_mode` 和给 `output_composer` 的交付说明。
 - 用户报告“素材好了”“S01 完成”“某一步失败”“继续下一步”或粘贴 `project_state` 时进入 `Continue Mode`，只交付下一张操作卡或失败诊断卡。
+- 用户要求修改既有制作包但不是失败诊断时进入 `Revision Mode`，只交付改稿补丁。
 - 稳定路由同类请求，避免即梦短片有时输出短包、有时输出完整制片文档。
 - 用户说“只要提示词”时，省略一句话设定和镜头表，只保留锚点、复制区和失败修正。
+
+### `prompts/revision_patch_builder.md`
+
+用途：处理既有制作包的局部改稿。
+
+使用时机：
+
+- 用户说“镜头 2 改一下”“换成横屏”“缩短到 10 秒”“风格更水墨”“只改这一段，其他不变”。
+- 用户粘贴 `project_state` 或已有执行包后提出新约束。
+- 用户需要保留已满意的素材和镜头，只替换受影响提示词。
+
+输出目标：
+
+- 明确改稿类型、影响范围、保留不变内容和下一动作。
+- 只输出受影响的 `IMG-*`、`VID-*`、`ASSET-*` 或全局锚点替换块。
+- 不重复完整项目设定、镜头表或未受影响提示词。
 
 ### `prompts/output_composer.md`
 
@@ -295,7 +313,7 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 输出目标：
 
 - 默认不暴露完整 `Project Packet`、`Handoff Notes`、长篇导演阐述、完整角色/场景圣经。
-- 根据 `Prompts Only`、`Continue Mode`、`Quick Mode`、`Standard Mode`、`Full Mode` 选择合适颗粒度。
+- 根据 `Prompts Only`、`Revision Mode`、`Continue Mode`、`Quick Mode`、`Standard Mode`、`Full Mode` 选择合适颗粒度。
 - 对即梦项目优先输出“复制提示词”和“生成顺序”。
 
 ### `prompts/qa_reviewer.md`
@@ -356,6 +374,7 @@ python scripts/jimeng_execute.py --manifest outputs/project/manifest.json --out 
 - 只要即梦执行包：使用 `intake`、`character_scene_bible_builder`、`shotlist_builder`、`image_prompt_builder`、`quick_package_router`、`platform_adapter`、`canvas_workflow_builder`、`video_prompt_builder`、`output_composer`，默认 `Quick Mode`。
 - 只要即梦提示词：使用 `intake`、`character_scene_bible_builder`、`shotlist_builder`、`image_prompt_builder`、`video_prompt_builder`、`platform_adapter`、`quick_package_router`、`output_composer`，默认 `Prompts Only`。
 - 继续即梦制作：读取已有 `execution_state`、用户粘贴的 `project_state` 和本轮进度，使用 `quick_package_router`、对应失败步骤的模块、`output_composer`，默认 `Continue Mode`。
+- 局部改稿：读取已有 `Project Packet`、`project_state` 或用户粘贴的制作包，使用 `quick_package_router`、`revision_patch_builder`、必要时使用对应提示词模块、`output_composer`，默认 `Revision Mode`。
 - 失败诊断：用户报告失败、变形、漂移、过曝、卡住或审核失败时，使用 `failure-diagnosis-card.md`，只输出诊断、重试提示词和状态更新。
 - 已有角色图/场景图做即梦短片：把已有素材标记为 `user_upload`，使用 `canvas_workflow_builder` 导入和编排，不重复生成同类参考图。
 - 已有剧本改分镜：使用 `intake`、`director_treatment_builder`、`character_scene_bible_builder`、`shotlist_builder`，不要重写核心剧情。

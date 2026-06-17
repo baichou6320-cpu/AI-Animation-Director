@@ -26,6 +26,7 @@
 - `canvas_mode`
 - `execution_state`
 - `project_state`
+- `revision_state`
 - `handoff_notes.to_output_composer`
 
 如果 `delivery_mode` 缺失，先调用 `quick_package_router`，不要在本模块内部根据片长、镜头数或平台自行猜测。
@@ -33,6 +34,7 @@
 路由结果是唯一事实来源：
 
 - `prompts_only`：使用 Prompts Only。
+- `revision`：使用 Revision Mode。
 - `continue`：使用 Continue Mode。
 - `quick`：使用 Quick Mode。
 - `standard`：使用 Standard Mode。
@@ -47,6 +49,23 @@
 - `disabled`：使用普通生图提示词结构。
 
 ## 输出模式
+
+### Revision Mode
+
+用于用户对既有制作包提出局部修改。读取 `revision_state`，只输出改稿补丁。
+
+使用 `templates/revision-patch-card.md`。
+
+固定结构：
+
+1. `改稿类型`：使用 `revision_patch_builder` 的稳定枚举。
+2. `影响范围`：只列受影响 `IMG-*`、`VID-*`、`ASSET-*` 或全局锚点。
+3. `保留不变`：列出不会重做的编号。
+4. `替换内容`：只给受影响的复制提示词或锚点替换块。
+5. `完成检查`：最多 3 项。
+6. `状态更新`：一个短 `json` 代码块，记录 `revision.mode`、`affected_ids` 和 `next_action`。
+
+禁止重复完整项目设定、完整镜头表、未受影响镜头提示词和长篇解释。
 
 ### Continue Mode
 
@@ -154,6 +173,7 @@ Quick Mode 和 Prompts Only 禁止输出：
 - 模块执行过程解释。
 - 重复说明“为什么这样设计”。
 - 配乐展开方案。
+- Revision Mode 中未受影响的镜头提示词。
 
 如果这些信息对生成有用，必须压缩进全局锚点、镜头表、复制提示词或失败修正，不要单独开大章节。
 
@@ -247,6 +267,7 @@ Quick Mode 要短，但不能牺牲可生成性：
 - 如果某镜头建议首尾帧，仍需保留 `IMG-Sxx` 作为首帧；尾帧可写在该镜头提示词或失败后改法里，不新增无编号资产。
 - `project_state` 必须是可解析 JSON，且包含 `state_type`、`shots`、`completed_steps`、`current_step` 和 `next_action`。
 - Prompts Only 不默认输出 `project_state`，除非用户明确要求保存状态。
+- Revision Mode 的 `状态更新` 必须是可解析 JSON，并包含 `revision.mode`、`revision.affected_ids` 和 `next_action`。
 
 ## Quick Mode 输出格式
 

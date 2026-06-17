@@ -34,11 +34,13 @@ Require-File (Join-Path $skill "prompts/output_composer.md")
 Require-File (Join-Path $skill "prompts/quick_package_router.md")
 Require-File (Join-Path $skill "prompts/canvas_workflow_builder.md")
 Require-File (Join-Path $skill "prompts/qa_reviewer.md")
+Require-File (Join-Path $skill "prompts/revision_patch_builder.md")
 Require-File (Join-Path $skill "templates/jimeng-quick-package.md")
 Require-File (Join-Path $skill "templates/jimeng-canvas-package.md")
 Require-File (Join-Path $skill "templates/jimeng-continue-card.md")
 Require-File (Join-Path $skill "templates/project-state.json")
 Require-File (Join-Path $skill "templates/failure-diagnosis-card.md")
+Require-File (Join-Path $skill "templates/revision-patch-card.md")
 Require-File (Join-Path $skill "references/workflow.md")
 Require-File (Join-Path $skill "references/jimeng-canvas.md")
 Require-Dir (Join-Path $skill "examples")
@@ -51,12 +53,13 @@ if ($examples.Count -lt 3) {
 foreach ($example in $examples) {
     $text = Get-Content -LiteralPath $example.FullName -Encoding UTF8 -Raw
     $isStateExample = $example.Name.StartsWith('state-save-')
+    $isRevisionExample = $example.Name.StartsWith('revision-')
 
     if ($example.Name -match "jimeng" -and $text -notmatch "IMG-REF") {
         $failures.Add("$($example.Name): Jimeng example missing IMG-REF.")
     }
 
-    if (-not $isStateExample) {
+    if (-not $isStateExample -and -not $isRevisionExample) {
         $vidMatches = [regex]::Matches($text, "VID-S(\d{2})")
         foreach ($match in $vidMatches) {
             $shot = $match.Groups[1].Value
@@ -81,7 +84,7 @@ foreach ($example in $examples) {
             $failures.Add('prompts-only-jimeng.md must not default to project state.')
         }
     }
-    elseif ($example.Name -match 'jimeng') {
+    elseif ($example.Name -match 'jimeng' -and -not $isRevisionExample) {
         foreach ($term in @('CV-MASTER', 'CV-OP-', 'Z-S01 -> IMG-S01 -> VID-S01')) {
             if (-not $text.Contains($term)) {
                 $failures.Add("$($example.Name): missing canvas term $term.")
@@ -190,10 +193,20 @@ if (Test-Path -LiteralPath $failureExample -PathType Leaf) {
     }
 }
 
+$revisionExample = Join-Path $skill 'examples/revision-change-shot-s02-jimeng.md'
+if (Test-Path -LiteralPath $revisionExample -PathType Leaf) {
+    $text = Get-Content -LiteralPath $revisionExample -Encoding UTF8 -Raw
+    foreach ($term in @('delivery_mode: revision', 'revision_mode: shot_patch', 'IMG-S02', 'VID-S02', 'regenerate IMG-S02', '```json')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("revision-change-shot-s02-jimeng.md missing term: $term")
+        }
+    }
+}
+
 $router = Join-Path $skill 'prompts/quick_package_router.md'
 if (Test-Path -LiteralPath $router -PathType Leaf) {
     $text = Get-Content -LiteralPath $router -Encoding UTF8 -Raw
-    foreach ($term in @('delivery_mode', 'Continue Mode', 'execution_state', 'project_state', 'failure_repair', 'canvas_mode', 'prompt_assets_only', 'routing_reason', 'handoff_notes.to_output_composer')) {
+    foreach ($term in @('delivery_mode', 'Revision Mode', 'Continue Mode', 'execution_state', 'project_state', 'revision_state', 'failure_repair', 'canvas_mode', 'prompt_assets_only', 'routing_reason', 'handoff_notes.to_output_composer')) {
         if (-not $text.Contains($term)) {
             $failures.Add("quick_package_router.md missing routing guard: $term")
         }
@@ -203,7 +216,7 @@ if (Test-Path -LiteralPath $router -PathType Leaf) {
 $composer = Join-Path $skill 'prompts/output_composer.md'
 if (Test-Path -LiteralPath $composer -PathType Leaf) {
     $text = Get-Content -LiteralPath $composer -Encoding UTF8 -Raw
-    foreach ($term in @('quick_package_router', 'delivery_mode', 'Continue Mode', 'project_state', 'failure-diagnosis-card', 'Z-S01 -> IMG-S01 -> VID-S01', 'canvas_mode', 'prompts_only', 'CV-OP-01', '```text')) {
+    foreach ($term in @('quick_package_router', 'delivery_mode', 'Revision Mode', 'Continue Mode', 'project_state', 'revision-patch-card', 'failure-diagnosis-card', 'Z-S01 -> IMG-S01 -> VID-S01', 'canvas_mode', 'prompts_only', 'CV-OP-01', '```text')) {
         if (-not $text.Contains($term)) {
             $failures.Add("output_composer.md missing delivery guard: $term")
         }
@@ -226,6 +239,26 @@ if (Test-Path -LiteralPath $qaReviewer -PathType Leaf) {
     foreach ($term in @('preflight_check', 'prompt_patch', 'failure_repair', 'continuity_review', 'qa_output: preflight_card', 'project_state', 'character_drift', 'lighting_error', 'Project Packet Updates', 'to_output_composer')) {
         if (-not $text.Contains($term)) {
             $failures.Add("qa_reviewer.md missing term: $term")
+        }
+    }
+}
+
+$revisionBuilder = Join-Path $skill 'prompts/revision_patch_builder.md'
+if (Test-Path -LiteralPath $revisionBuilder -PathType Leaf) {
+    $text = Get-Content -LiteralPath $revisionBuilder -Encoding UTF8 -Raw
+    foreach ($term in @('shot_patch', 'style_tune', 'duration_resize', 'aspect_ratio_change', 'platform_switch', 'asset_replace', 'affected_ids', 'preserved_ids', 'invalidated_ids', 'revision_state', 'to_output_composer')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("revision_patch_builder.md missing term: $term")
+        }
+    }
+}
+
+$revisionTemplate = Join-Path $skill 'templates/revision-patch-card.md'
+if (Test-Path -LiteralPath $revisionTemplate -PathType Leaf) {
+    $text = Get-Content -LiteralPath $revisionTemplate -Encoding UTF8 -Raw
+    foreach ($term in @('template: revision-patch-card', 'delivery_mode: revision', '```json')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("revision-patch-card.md missing term: $term")
         }
     }
 }

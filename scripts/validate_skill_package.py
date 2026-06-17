@@ -28,11 +28,13 @@ REQUIRED_FILES = [
     SKILL / "prompts/quick_package_router.md",
     SKILL / "prompts/canvas_workflow_builder.md",
     SKILL / "prompts/qa_reviewer.md",
+    SKILL / "prompts/revision_patch_builder.md",
     SKILL / "templates/jimeng-quick-package.md",
     SKILL / "templates/jimeng-canvas-package.md",
     SKILL / "templates/jimeng-continue-card.md",
     SKILL / "templates/project-state.json",
     SKILL / "templates/failure-diagnosis-card.md",
+    SKILL / "templates/revision-patch-card.md",
     SKILL / "references/workflow.md",
     SKILL / "references/jimeng-canvas.md",
 ]
@@ -71,11 +73,12 @@ def main() -> int:
         is_jimeng = "jimeng" in example.name
         is_prompts_only = example.name == "prompts-only-jimeng.md"
         is_state_example = example.name.startswith("state-save-")
+        is_revision_example = example.name.startswith("revision-")
 
         if is_jimeng and "IMG-REF" not in text:
             failures.append(f"{example.name}: Jimeng example missing IMG-REF.")
 
-        if not is_state_example:
+        if not is_state_example and not is_revision_example:
             for match in re.finditer(r"VID-S(\d{2})", text):
                 shot = match.group(1)
                 required_image = f"`IMG-S{shot}`"
@@ -107,7 +110,7 @@ def main() -> int:
                 failures.append(
                     "prompts-only-jimeng.md must not include canvas operation cards."
                 )
-        elif is_jimeng:
+        elif is_jimeng and not is_revision_example:
             for term in ["逐镜头执行卡", "CV-MASTER", "CV-OP-", "Z-S01"]:
                 if term not in text:
                     failures.append(f"{example.name}: missing canvas term {term}.")
@@ -286,6 +289,27 @@ def main() -> int:
             if not blocks or blocks[-1].get("failed_step") != "VID-S02":
                 failures.append("failure-diagnosis-character-drift.md must update failed_step.")
 
+    revision_example = SKILL / "examples/revision-change-shot-s02-jimeng.md"
+    if revision_example.is_file():
+        text = read_text(revision_example)
+        for term in [
+            "delivery_mode: revision",
+            "revision_mode: shot_patch",
+            "影响范围：`IMG-S02`、`VID-S02`",
+            "保留不变",
+            "状态更新",
+            "regenerate IMG-S02",
+        ]:
+            if term not in text:
+                failures.append(f"revision-change-shot-s02-jimeng.md missing term: {term}")
+        try:
+            blocks = json_blocks(text)
+        except json.JSONDecodeError as exc:
+            failures.append(f"revision-change-shot-s02-jimeng.md has invalid JSON: {exc}")
+        else:
+            if not blocks or blocks[-1].get("revision", {}).get("mode") != "shot_patch":
+                failures.append("revision-change-shot-s02-jimeng.md must update revision.mode.")
+
     router = SKILL / "prompts/quick_package_router.md"
     composer = SKILL / "prompts/output_composer.md"
     if router.is_file():
@@ -294,9 +318,11 @@ def main() -> int:
             "唯一路由规则",
             "平台不会覆盖片长和镜头规模判定",
             "delivery_mode",
+            "Revision Mode",
             "Continue Mode",
             "execution_state",
             "project_state",
+            "revision_state",
             "failure_repair",
             "canvas_mode",
             "prompt_assets_only",
@@ -309,9 +335,11 @@ def main() -> int:
         for term in [
             "本模块不负责判断交付模式",
             "路由结果是唯一事实来源",
+            "Revision Mode",
             "Continue Mode",
             "逐镜头执行卡",
             "project_state",
+            "revision-patch-card",
             "failure-diagnosis-card",
             "canvas_mode",
             "```text",
@@ -374,6 +402,41 @@ def main() -> int:
         ]:
             if term not in text:
                 failures.append(f"qa_reviewer.md missing term: {term}")
+
+    revision_builder = SKILL / "prompts/revision_patch_builder.md"
+    if revision_builder.is_file():
+        text = read_text(revision_builder)
+        for term in [
+            "shot_patch",
+            "style_tune",
+            "duration_resize",
+            "aspect_ratio_change",
+            "platform_switch",
+            "asset_replace",
+            "affected_ids",
+            "preserved_ids",
+            "invalidated_ids",
+            "revision_state",
+            "to_output_composer",
+        ]:
+            if term not in text:
+                failures.append(f"revision_patch_builder.md missing term: {term}")
+
+    revision_template = SKILL / "templates/revision-patch-card.md"
+    if revision_template.is_file():
+        text = read_text(revision_template)
+        for term in [
+            "template: revision-patch-card",
+            "delivery_mode: revision",
+            "改稿类型",
+            "影响范围",
+            "保留不变",
+            "替换内容",
+            "状态更新",
+            "```json",
+        ]:
+            if term not in text:
+                failures.append(f"revision-patch-card.md missing term: {term}")
 
     outputs_dir = SKILL / "outputs"
     output_files = [
