@@ -27,6 +27,8 @@ REQUIRED_FILES = [
     SKILL / "prompts/output_composer.md",
     SKILL / "prompts/quick_package_router.md",
     SKILL / "prompts/canvas_workflow_builder.md",
+    SKILL / "prompts/image_prompt_builder.md",
+    SKILL / "prompts/platform_adapter.md",
     SKILL / "prompts/qa_reviewer.md",
     SKILL / "prompts/revision_patch_builder.md",
     SKILL / "templates/jimeng-quick-package.md",
@@ -37,6 +39,7 @@ REQUIRED_FILES = [
     SKILL / "templates/revision-patch-card.md",
     SKILL / "references/workflow.md",
     SKILL / "references/jimeng-canvas.md",
+    SKILL / "references/prompt-templates.md",
 ]
 
 
@@ -360,6 +363,7 @@ def main() -> int:
             "master_plus_sequences",
             "prompt_assets_only",
             "generate/import",
+            "Rich Visual Image Prompt",
             "export",
             "7-12 镜",
             "user_upload",
@@ -384,6 +388,50 @@ def main() -> int:
             failures.append(
                 f"canvas_workflow_builder.md has unsupported operation types: {unknown_ops}"
             )
+
+    image_builder = SKILL / "prompts/image_prompt_builder.md"
+    if image_builder.is_file():
+        text = read_text(image_builder)
+        for term in [
+            "Rich Visual Image Prompt",
+            "高质量画面提示词规则",
+            "前景",
+            "中景",
+            "背景",
+            "Moebius / Jean Giraud",
+            "大师杰作",
+            "production-ready keyframe",
+        ]:
+            if term not in text:
+                failures.append(f"image_prompt_builder.md missing term: {term}")
+
+    prompt_templates = SKILL / "references/prompt-templates.md"
+    if prompt_templates.is_file():
+        text = read_text(prompt_templates)
+        for term in [
+            "Rich Visual Image Prompt",
+            "Rich Prompt Quality Stack",
+            "Weak Prompt Anti-Pattern",
+            "Reference Style Translation",
+            "Moebius / Jean Giraud",
+            "visible nouns",
+        ]:
+            if term not in text:
+                failures.append(f"prompt-templates.md missing term: {term}")
+
+    platform_adapter = SKILL / "prompts/platform_adapter.md"
+    if platform_adapter.is_file():
+        text = read_text(platform_adapter)
+        for term in [
+            "前景",
+            "中景",
+            "背景",
+            "主色调",
+            "大师杰作",
+            "森林小屋",
+        ]:
+            if term not in text:
+                failures.append(f"platform_adapter.md missing rich image prompt term: {term}")
 
     qa_reviewer = SKILL / "prompts/qa_reviewer.md"
     if qa_reviewer.is_file():

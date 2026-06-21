@@ -8,6 +8,49 @@ Use these templates when writing copy-ready prompts. Keep natural language clean
 [主体/角色锚点], [动作或姿态], [场景锚点], [构图/景别/机位], [光影], [色彩与材质], [动画/影视风格锚点], [情绪], highly coherent character design, cinematic composition, production-ready keyframe
 ```
 
+## Rich Visual Image Prompt
+
+用于用户追求“好看、画面感、电影感、插画感、参考图效果更好”的生图提示词。不要只堆风格词和“大师杰作”；必须把画面可见信息写完整。
+
+```text
+[明确主体/建筑/角色] 位于 [具体场景与季节]，[前景元素] 形成自然框景，[中景主体与动作/状态]，[背景层次与天空/远景]。[主色调与辅助色]，[主光源、环境光、阴影关系]，[材质细节、植物/道具/纹理]。[风格转译后的线条、笔触、渲染或镜头语言]，[细节密度：丰富但画面干净]，[情绪关键词]，[构图与画幅]，production-ready keyframe, highly coherent image.
+```
+
+### Rich Prompt Quality Stack
+
+按这个顺序写，生成质量通常更稳：
+
+1. 主体：画面中心是什么，主体必须清楚。
+2. 空间：前景、中景、背景分别有什么。
+3. 时间/季节/天气：夏天、雨夜、黄昏、清晨等。
+4. 色彩主调：主色和点缀色，不要只写“好看”。
+5. 光影：阳光、逆光、柔光、体积光、局部发光。
+6. 材质/细节：苔藓、花、石路、木梁、玻璃、水面等可见纹理。
+7. 风格转译：线条、色块、镜头、渲染、笔触，而不是只写艺术家名字。
+8. 情绪：治愈、浪漫、神秘、可爱、史诗等。
+9. 质量约束：画面干净、主体可读、细节丰富但不杂乱。
+
+### Weak Prompt Anti-Pattern
+
+避免只写：
+
+```text
+[主体]，[某艺术家/某作品]风格，极致表现力，大师杰作，细节完美，高级感。
+```
+
+这种提示词缺少空间、光线、色彩、构图和材质，容易生成“看起来有风格但画面不可控”的结果。
+
+### Reference Style Translation
+
+当用户提供艺术家、作品、引擎或渲染器词汇时，不要只照抄。先转译为可见特征：
+
+- `Moebius / Jean Giraud`: clean European comic linework, elegant ink contours, luminous flat color blocks, surreal fantasy environment, intricate but readable detail.
+- `极繁主义`: dense botanical detail, layered foreground and background, rich props and textures, but clean composition.
+- `浪漫感 / 治愈`: warm daylight, soft color harmony, inviting path, cozy architecture, gentle atmosphere.
+- `虚幻渲染 / 高级实时渲染`: stylized global illumination, crisp atmospheric light, polished material response, cinematic depth, not photorealistic unless requested.
+
+用户明确要求保留参考名时，可以保留参考名，但必须紧跟可见特征描述；不要让参考名成为唯一风格信息。
+
 ## Universal Image Negative Prompt
 
 ```text
@@ -77,3 +120,4 @@ Use this compact block for each shot:
 - Avoid stuffing every visual idea into every shot; each shot needs one job.
 - Use recurring exact anchors for character, costume, prop, and location.
 - Use negative prompts to prevent predictable failures, not to list every possible bad output.
+- For image prompts, prefer visible nouns, spatial layers, color and lighting over abstract praise words.

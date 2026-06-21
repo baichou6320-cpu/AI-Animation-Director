@@ -33,6 +33,8 @@ Require-File (Join-Path $skill "agents/openai.yaml")
 Require-File (Join-Path $skill "prompts/output_composer.md")
 Require-File (Join-Path $skill "prompts/quick_package_router.md")
 Require-File (Join-Path $skill "prompts/canvas_workflow_builder.md")
+Require-File (Join-Path $skill "prompts/image_prompt_builder.md")
+Require-File (Join-Path $skill "prompts/platform_adapter.md")
 Require-File (Join-Path $skill "prompts/qa_reviewer.md")
 Require-File (Join-Path $skill "prompts/revision_patch_builder.md")
 Require-File (Join-Path $skill "templates/jimeng-quick-package.md")
@@ -43,6 +45,7 @@ Require-File (Join-Path $skill "templates/failure-diagnosis-card.md")
 Require-File (Join-Path $skill "templates/revision-patch-card.md")
 Require-File (Join-Path $skill "references/workflow.md")
 Require-File (Join-Path $skill "references/jimeng-canvas.md")
+Require-File (Join-Path $skill "references/prompt-templates.md")
 Require-Dir (Join-Path $skill "examples")
 
 $examples = Get-ChildItem -Path (Join-Path $skill "examples") -Filter "*.md" -File -ErrorAction SilentlyContinue
@@ -226,9 +229,39 @@ if (Test-Path -LiteralPath $composer -PathType Leaf) {
 $canvasBuilder = Join-Path $skill 'prompts/canvas_workflow_builder.md'
 if (Test-Path -LiteralPath $canvasBuilder -PathType Leaf) {
     $text = Get-Content -LiteralPath $canvasBuilder -Encoding UTF8 -Raw
-    foreach ($term in @('canvas_plan', 'CV-MASTER', 'master_plus_sequences', 'prompt_assets_only', 'generate/import', 'user_upload', 'export')) {
+    foreach ($term in @('canvas_plan', 'CV-MASTER', 'master_plus_sequences', 'prompt_assets_only', 'generate/import', 'Rich Visual Image Prompt', 'user_upload', 'export')) {
         if (-not $text.Contains($term)) {
             $failures.Add("canvas_workflow_builder.md missing term: $term")
+        }
+    }
+}
+
+$imageBuilder = Join-Path $skill 'prompts/image_prompt_builder.md'
+if (Test-Path -LiteralPath $imageBuilder -PathType Leaf) {
+    $text = Get-Content -LiteralPath $imageBuilder -Encoding UTF8 -Raw
+    foreach ($term in @('Rich Visual Image Prompt', 'Moebius / Jean Giraud', 'production-ready keyframe')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("image_prompt_builder.md missing term: $term")
+        }
+    }
+}
+
+$promptTemplates = Join-Path $skill 'references/prompt-templates.md'
+if (Test-Path -LiteralPath $promptTemplates -PathType Leaf) {
+    $text = Get-Content -LiteralPath $promptTemplates -Encoding UTF8 -Raw
+    foreach ($term in @('Rich Visual Image Prompt', 'Rich Prompt Quality Stack', 'Weak Prompt Anti-Pattern', 'Reference Style Translation', 'Moebius / Jean Giraud', 'visible nouns')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("prompt-templates.md missing term: $term")
+        }
+    }
+}
+
+$platformAdapter = Join-Path $skill 'prompts/platform_adapter.md'
+if (Test-Path -LiteralPath $platformAdapter -PathType Leaf) {
+    $text = Get-Content -LiteralPath $platformAdapter -Encoding UTF8 -Raw
+    foreach ($term in @('rich_image_prompt_adapter')) {
+        if (-not $text.Contains($term)) {
+            $failures.Add("platform_adapter.md missing rich image prompt term: $term")
         }
     }
 }
