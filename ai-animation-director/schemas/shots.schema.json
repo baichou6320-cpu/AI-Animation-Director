@@ -1,0 +1,197 @@
+{
+  "$defs": {
+    "ArtifactStatus": {
+      "enum": [
+        "not_started",
+        "draft",
+        "pending_review",
+        "approved",
+        "invalidated"
+      ],
+      "title": "ArtifactStatus",
+      "type": "string"
+    },
+    "StageHandoff": {
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Decisions",
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "risks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "invalidates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Invalidates",
+          "type": "array"
+        },
+        "next_stage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StructuredStage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StageHandoff",
+      "type": "object"
+    },
+    "StructuredShot": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "order": {
+          "minimum": 1,
+          "title": "Order",
+          "type": "integer"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "duration_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Seconds"
+        },
+        "purpose": {
+          "default": "",
+          "title": "Purpose",
+          "type": "string"
+        },
+        "framing": {
+          "default": "",
+          "title": "Framing",
+          "type": "string"
+        },
+        "camera": {
+          "default": "",
+          "title": "Camera",
+          "type": "string"
+        },
+        "subject_action": {
+          "default": "",
+          "title": "Subject Action",
+          "type": "string"
+        },
+        "environment_motion": {
+          "default": "",
+          "title": "Environment Motion",
+          "type": "string"
+        },
+        "asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Asset Ids",
+          "type": "array"
+        },
+        "continuity": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Continuity",
+          "type": "array"
+        },
+        "difficulty": {
+          "default": "medium",
+          "title": "Difficulty",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "order",
+        "title"
+      ],
+      "title": "StructuredShot",
+      "type": "object"
+    },
+    "StructuredStage": {
+      "enum": [
+        "intake",
+        "blueprint_review",
+        "concept",
+        "style",
+        "assets",
+        "shots",
+        "image_prompts",
+        "video_prompts",
+        "production",
+        "complete"
+      ],
+      "title": "StructuredStage",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/ArtifactStatus",
+      "default": "not_started"
+    },
+    "shots": {
+      "items": {
+        "$ref": "#/$defs/StructuredShot"
+      },
+      "title": "Shots",
+      "type": "array"
+    },
+    "handoff": {
+      "$ref": "#/$defs/StageHandoff"
+    }
+  },
+  "required": [
+    "project_id"
+  ],
+  "title": "ShotPlanArtifact",
+  "type": "object"
+}

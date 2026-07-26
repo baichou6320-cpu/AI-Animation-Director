@@ -1,0 +1,160 @@
+{
+  "$defs": {
+    "ArtifactStatus": {
+      "enum": [
+        "not_started",
+        "draft",
+        "pending_review",
+        "approved",
+        "invalidated"
+      ],
+      "title": "ArtifactStatus",
+      "type": "string"
+    },
+    "AssetRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus",
+          "default": "draft"
+        },
+        "prompt_anchor": {
+          "default": "",
+          "title": "Prompt Anchor",
+          "type": "string"
+        },
+        "source_reference": {
+          "default": "",
+          "title": "Source Reference",
+          "type": "string"
+        },
+        "consistency_rules": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Consistency Rules",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "name"
+      ],
+      "title": "AssetRecord",
+      "type": "object"
+    },
+    "StageHandoff": {
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Decisions",
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "risks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "invalidates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Invalidates",
+          "type": "array"
+        },
+        "next_stage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StructuredStage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StageHandoff",
+      "type": "object"
+    },
+    "StructuredStage": {
+      "enum": [
+        "intake",
+        "blueprint_review",
+        "concept",
+        "style",
+        "assets",
+        "shots",
+        "image_prompts",
+        "video_prompts",
+        "production",
+        "complete"
+      ],
+      "title": "StructuredStage",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/ArtifactStatus",
+      "default": "not_started"
+    },
+    "assets": {
+      "items": {
+        "$ref": "#/$defs/AssetRecord"
+      },
+      "title": "Assets",
+      "type": "array"
+    },
+    "handoff": {
+      "$ref": "#/$defs/StageHandoff"
+    }
+  },
+  "required": [
+    "project_id"
+  ],
+  "title": "AssetLibraryArtifact",
+  "type": "object"
+}

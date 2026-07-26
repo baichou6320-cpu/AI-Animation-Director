@@ -41,6 +41,10 @@
 - `design_bible`
 - `shot_plan`
 - `prompt_assets`
+- `visual_references`
+- `style_dna`
+- `pixel_style_bible`
+- `animatic_state`
 - `risk_register`
 - `delivery_mode`
 - 用户上传或明确声明已有的素材
@@ -55,6 +59,8 @@
 - 是否允许抠图、重绘或融合
 
 不要假装看到了未提供的图片。用户只说“我有角色图”但没有提供内容时，将其标记为待导入素材，并沿用文字锚点。
+
+存在 `style_dna` 时，所有画布生成、融合、局部重绘和扩图操作必须继承已批准的主色调、光源方向、空间层次、材质和构图密度。像素成片项目还必须保持 `pixel_style_bible` 的像素尺寸、调色板和角色比例；禁止使用柔性放大修复像素边缘。动态分镜未批准时，画布只允许制作 `REF-HERO` 和 `SB-Sxx`，不得导出正式 `IMG-Sxx`。
 
 ## 即梦画布能力边界
 
@@ -91,6 +97,7 @@ canvas_plan:
   canvases:
     - canvas_id: CV-MASTER
       purpose: 资产母版与镜头关键帧
+      layout_map: "left Z-ASSET, then Z-S01...Z-Sxx in storyboard order"
       zones:
         - zone_id: Z-ASSET
           purpose: 角色、场景、道具参考
@@ -103,11 +110,20 @@ canvas_plan:
       depends_on: [ASSET-CHAR-A, ASSET-SCENE-A]
       source_assets: [ASSET-CHAR-A, ASSET-SCENE-A]
       operation_type: arrange
+      operation_goal: ""
       prompt: ""
       checkpoints: []
       fallback: ""
       export_id: IMG-S01
       status: pending
+  repair_ops:
+    - repair_id: CV-REPAIR-01
+      applies_to: IMG-S01
+      failure_type: character_drift | style_drift | composition_error | lighting_error | deformation
+      operation_type: inpaint
+      preserve: []
+      modify_only: []
+      prompt: ""
   exports:
     - export_id: IMG-S01
       canvas_id: CV-MASTER
@@ -133,6 +149,7 @@ canvas_plan:
 - `Z-ASSET`：角色、场景、道具、风格参考。
 - `Z-S01` 到 `Z-S06`：逐镜头构图、融合和修正。
 - 每个镜头区域只导出一个正式首帧。
+- 画布地图默认写为：`CV-MASTER: left Z-ASSET, then Z-S01...Z-Sxx in storyboard order`。不要展开复杂坐标，也不要承诺真实界面位置。
 
 ### 7-12 镜
 
@@ -204,6 +221,18 @@ canvas_plan:
 保留小蘑菇红色伞帽上的 3 个奶白圆点、浅米色身体和豆豆眼不变。让角色自然融入雨后苔藓森林，统一蓝紫夜色与暖黄色萤光，补全脚下接触阴影，保持清晰像素边缘，不增加新角色。
 ```
 
+## 局部修复卡规则
+
+当用户说某张 `IMG-Sxx` 太丑、角色变了、画风跑了、光太爆、构图不稳时，不要重做整包。生成 `repair_ops`，只修当前画布区域：
+
+- `character_drift`: 使用 `inpaint`，保留脸型、发型、服装、标志物，只修变形部位。
+- `style_drift`: 使用 `inpaint` 或 `blend`，保留构图与主体，只统一线条、色彩、材质和光源。
+- `composition_error`: 优先 `arrange` 或 `expand`，保留主体，调整留白、裁切、前中后景关系。
+- `lighting_error`: 使用 `inpaint`，保留主体轮廓，只降低过曝、统一主光方向和阴影。
+- `deformation`: 使用 `inpaint`，只修手、脸、道具边缘或局部身体，不改变镜头内容。
+
+局部修复提示词必须写清：保留什么、只修改什么、光源/色彩/材质如何回到全局锚点、不要新增什么。
+
 ## 镜头导出规则
 
 - 每个镜头表编号必须有同编号 `IMG-Sxx` 导出。
@@ -222,6 +251,7 @@ Quick、Standard 和 Full 模式中的画布操作统一使用：
 画布/区域：`CV-MASTER / Z-S01`
 输入素材：`ASSET-CHAR-A`、`ASSET-SCENE-A`
 操作类型：`blend`
+操作目标：[例如：组合角色与场景，统一光源并导出首帧]
 操作提示词：
 ```text
 [只放本次局部操作提示词]

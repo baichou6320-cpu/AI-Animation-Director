@@ -1,0 +1,238 @@
+{
+  "$defs": {
+    "ArtifactStatus": {
+      "enum": [
+        "not_started",
+        "draft",
+        "pending_review",
+        "approved",
+        "invalidated"
+      ],
+      "title": "ArtifactStatus",
+      "type": "string"
+    },
+    "ProjectBlueprint": {
+      "additionalProperties": false,
+      "properties": {
+        "one_sentence_understanding": {
+          "title": "One Sentence Understanding",
+          "type": "string"
+        },
+        "structured_summary": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Structured Summary",
+          "type": "object"
+        },
+        "recommended_story_direction": {
+          "title": "Recommended Story Direction",
+          "type": "string"
+        },
+        "ending_direction": {
+          "default": "",
+          "title": "Ending Direction",
+          "type": "string"
+        },
+        "style_direction": {
+          "title": "Style Direction",
+          "type": "string"
+        },
+        "color_lighting_direction": {
+          "default": "",
+          "title": "Color Lighting Direction",
+          "type": "string"
+        },
+        "camera_direction": {
+          "title": "Camera Direction",
+          "type": "string"
+        },
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "editable_fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Editable Fields",
+          "type": "array"
+        },
+        "next_stage_description": {
+          "default": "确认后进入风格设计、资产设计和镜头规划。",
+          "title": "Next Stage Description",
+          "type": "string"
+        }
+      },
+      "required": [
+        "one_sentence_understanding",
+        "recommended_story_direction",
+        "style_direction",
+        "camera_direction"
+      ],
+      "title": "ProjectBlueprint",
+      "type": "object"
+    },
+    "StageHandoff": {
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Decisions",
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "risks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "invalidates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Invalidates",
+          "type": "array"
+        },
+        "next_stage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StructuredStage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StageHandoff",
+      "type": "object"
+    },
+    "StructuredStage": {
+      "enum": [
+        "intake",
+        "blueprint_review",
+        "concept",
+        "style",
+        "assets",
+        "shots",
+        "image_prompts",
+        "video_prompts",
+        "production",
+        "complete"
+      ],
+      "title": "StructuredStage",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/ArtifactStatus",
+      "default": "not_started"
+    },
+    "logline": {
+      "default": "",
+      "title": "Logline",
+      "type": "string"
+    },
+    "theme": {
+      "default": "",
+      "title": "Theme",
+      "type": "string"
+    },
+    "story_direction": {
+      "default": "",
+      "title": "Story Direction",
+      "type": "string"
+    },
+    "ending_direction": {
+      "default": "",
+      "title": "Ending Direction",
+      "type": "string"
+    },
+    "visual_direction": {
+      "default": "",
+      "title": "Visual Direction",
+      "type": "string"
+    },
+    "director_rules": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Director Rules",
+      "type": "array"
+    },
+    "blueprint": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ProjectBlueprint"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "handoff": {
+      "$ref": "#/$defs/StageHandoff"
+    }
+  },
+  "required": [
+    "project_id"
+  ],
+  "title": "ConceptArtifact",
+  "type": "object"
+}

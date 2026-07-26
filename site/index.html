@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="AI Animation Director 将一个想法推进为可确认、可生成、可复盘的 AI 动画生产流程。"
+    />
+    <meta name="theme-color" content="#101613" />
+    <title>AI Animation Director</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">跳到主要内容</a>
+
+    <header class="site-header" aria-label="网站导航">
+      <a class="wordmark" href="#top" aria-label="AI Animation Director 首页">
+        <span class="wordmark-mark">AD</span>
+        <span>AI Animation Director</span>
+      </a>
+      <nav>
+        <a href="#workflow">工作流</a>
+        <a href="#pipelines">制作路径</a>
+        <a href="#start">开始使用</a>
+        <a
+          class="icon-link"
+          href="https://github.com/baichou6320-cpu/AI-Animation-Director"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="打开 GitHub 仓库"
+          title="GitHub"
+        >
+          <i data-lucide="github" aria-hidden="true"></i>
+        </a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section id="top" class="scroll-film" aria-labelledby="hero-title">
+        <div class="film-stage">
+          <video
+            id="hero-video"
+            class="hero-video"
+            muted
+            playsinline
+            preload="auto"
+            tabindex="-1"
+            aria-hidden="true"
+          ></video>
+          <div class="hero-poster" aria-hidden="true"></div>
+          <div class="video-shade" aria-hidden="true"></div>
+
+          <div class="hero-intro" data-hero-panel="0">
+            <p class="eyebrow">OPEN SOURCE CODEX SKILL</p>
+            <h1 id="hero-title">AI Animation<br />Director</h1>
+            <p class="hero-summary">
+              把一个想法，推进为可确认、可生成、可复盘的 AI 动画生产流程。
+            </p>
+            <div class="hero-actions">
+              <a class="primary-action" href="#workflow">
+                <i data-lucide="workflow" aria-hidden="true"></i>
+                查看工作流
+              </a>
+              <a
+                class="secondary-action"
+                href="https://github.com/baichou6320-cpu/AI-Animation-Director"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <i data-lucide="github" aria-hidden="true"></i>
+                GitHub
+              </a>
+            </div>
+          </div>
+
+          <div class="film-chapters" aria-live="polite">
+            <article class="film-chapter" data-hero-panel="1">
+              <span>01</span>
+              <h2>先把想法变清楚</h2>
+              <p>动态问答与项目蓝图，锁定主题、用途、画风和交付边界。</p>
+            </article>
+            <article class="film-chapter" data-hero-panel="2">
+              <span>02</span>
+              <h2>让画面先被看见</h2>
+              <p>风格 DNA、角色资产与关键帧，在视频生成前完成视觉确认。</p>
+            </article>
+            <article class="film-chapter" data-hero-panel="3">
+              <span>03</span>
+              <h2>只描述真正的运动</h2>
+              <p>Motion Contract 明确什么动、什么不动、镜头如何抵达终点。</p>
+            </article>
+            <article class="film-chapter" data-hero-panel="4">
+              <span>04</span>
+              <h2>失败不再重做全部</h2>
+              <p>定位角色漂移、动作变形和光影错误，只返修受影响的步骤。</p>
+            </article>
+            <article class="film-chapter" data-hero-panel="5">
+              <span>05</span>
+              <h2>把生成变成成片</h2>
+              <p>样片审核、逐镜生产、状态保存、剪辑声音与最终验收。</p>
+            </article>
+          </div>
+
+          <div class="film-progress" aria-hidden="true">
+            <span id="film-progress-bar"></span>
+          </div>
+          <div class="scroll-cue" aria-hidden="true">
+            <i data-lucide="arrow-down"></i>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" class="section workflow-section">
+        <div class="section-heading">
+          <p class="eyebrow">PRODUCTION, NOT PROMPT DUMPING</p>
+          <h2>从灵感到成片，每一步都能确认</h2>
+          <p>
+            内部保留导演、分镜与制作判断；用户看到的，是当前真正需要执行的一步。
+          </p>
+        </div>
+        <ol class="workflow-track">
+          <li>
+            <strong>01</strong>
+            <span>理解需求</span>
+            <small>QA · Blueprint</small>
+          </li>
+          <li>
+            <strong>02</strong>
+            <span>视觉定调</span>
+            <small>Style DNA · Assets</small>
+          </li>
+          <li>
+            <strong>03</strong>
+            <span>镜头设计</span>
+            <small>Shotlist · Animatic</small>
+          </li>
+          <li>
+            <strong>04</strong>
+            <span>逐镜生产</span>
+            <small>Keyframe · Motion</small>
+          </li>
+          <li>
+            <strong>05</strong>
+            <span>审核交付</span>
+            <small>Review · Final</small>
+          </li>
+        </ol>
+      </section>
+
+      <section id="pipelines" class="section pipelines-section">
+        <div class="section-heading compact">
+          <p class="eyebrow">ONE SKILL, TWO PRODUCTION TRACKS</p>
+          <h2>按项目复杂度选择路径</h2>
+        </div>
+        <div class="pipeline-grid">
+          <article class="pipeline">
+            <div class="pipeline-label">
+              <i data-lucide="sparkles" aria-hidden="true"></i>
+              即梦画布
+            </div>
+            <h3>短片与视觉实验</h3>
+            <p>5–30 秒、3–6 镜头。先锁角色和场景，再逐镜导出关键帧与图生视频提示词。</p>
+            <ul>
+              <li>轻量执行包</li>
+              <li>画布资产复用</li>
+              <li>逐镜失败降级</li>
+            </ul>
+          </article>
+          <article class="pipeline">
+            <div class="pipeline-label">
+              <i data-lucide="clapperboard" aria-hidden="true"></i>
+              Seedance Harness
+            </div>
+            <h3>剧本与多集生产</h3>
+            <p>导演讲戏、统一 Reference Index、复杂镜头故事板和样片优先的批量管线。</p>
+            <ul>
+              <li>跨集资产复用</li>
+              <li>Motion Prompt</li>
+              <li>阶段审核门禁</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section proof-section">
+        <div class="proof-media">
+          <img
+            src="./media/hero-poster.webp"
+            alt="峡谷瀑布环境动画的原创关键帧"
+            loading="lazy"
+          />
+        </div>
+        <div class="proof-copy">
+          <p class="eyebrow">A REAL PRODUCTION CONTRACT</p>
+          <h2>提示词不是形容词堆叠</h2>
+          <p>
+            每条视频提示词都从已批准关键帧出发，明确起点、终点、主体动作、环境微动、摄影机运动和不动项。
+          </p>
+          <pre><code>起点：晨雾停留在峡谷中层
+环境：瀑布持续下落，草坡轻微起伏
+镜头：单一、连续、极慢推近
+锁定：地形、人物位置、左侧文案安全区
+终点：光线略暖，构图与起点保持一致</code></pre>
+        </div>
+      </section>
+
+      <section id="start" class="section start-section">
+        <div class="section-heading compact">
+          <p class="eyebrow">START WITH ONE IDEA</p>
+          <h2>把导演工作流装进 Codex</h2>
+          <p>安装后，用一句主题开始。Skill 会在真正需要时提问，并在确认门前停下。</p>
+        </div>
+        <div class="install-row">
+          <code>使用 $ai-animation-director，帮我制作一段 AI 动画短片</code>
+          <button
+            id="copy-prompt"
+            class="icon-button"
+            type="button"
+            aria-label="复制开始提示词"
+            title="复制"
+          >
+            <i data-lucide="copy" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="start-actions">
+          <a
+            class="primary-action"
+            href="https://github.com/baichou6320-cpu/AI-Animation-Director"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i data-lucide="github" aria-hidden="true"></i>
+            查看仓库
+          </a>
+          <a class="secondary-action" href="#top">
+            <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+            重看开场
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <span>AI Animation Director</span>
+      <span>Built for deliberate AI filmmaking.</span>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

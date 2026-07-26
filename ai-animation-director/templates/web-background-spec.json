@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "project_id": "example-project",
+  "status": "draft",
+  "delivery_profile": "website_background",
+  "interaction": "scroll_scrub",
+  "duration_seconds": 10.1,
+  "text_safe_zone": "left_center",
+  "allowed_motion": [
+    "waterfall",
+    "mist",
+    "grass",
+    "light"
+  ],
+  "locked_elements": [
+    "terrain",
+    "composition",
+    "text_safe_zone"
+  ],
+  "camera_motion": "single_continuous_slow_push",
+  "audio": false,
+  "source_asset": "IMG-WEB-HERO",
+  "desktop_asset": "",
+  "mobile_asset": "",
+  "poster_asset": "",
+  "public_release_ready": false,
+  "handoff": {
+    "decisions": [],
+    "constraints": [],
+    "risks": [],
+    "dependencies": [],
+    "invalidates": [],
+    "next_stage": "production"
+  }
+}

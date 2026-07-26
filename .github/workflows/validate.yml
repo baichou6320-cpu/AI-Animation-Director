@@ -24,7 +24,39 @@ jobs:
       - name: Validate package with Python
         run: python scripts/validate_skill_package.py
 
+      - name: Install production workspace test dependencies
+        run: python -m pip install -e ".[dev]"
+
+      - name: Test production workspace
+        run: python -m pytest
+
       - name: Validate package with PowerShell
         if: runner.os == 'Windows'
         shell: powershell
         run: .\scripts\validate_skill_package.ps1
+
+  site:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install site dependencies
+        working-directory: site
+        run: npm ci
+
+      - name: Test scroll controller
+        working-directory: site
+        run: npm test
+
+      - name: Build site
+        working-directory: site
+        run: npm run build

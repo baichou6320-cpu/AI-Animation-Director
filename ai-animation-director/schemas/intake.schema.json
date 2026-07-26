@@ -1,0 +1,233 @@
+{
+  "$defs": {
+    "IntakeQuestionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "question": {
+          "title": "Question",
+          "type": "string"
+        },
+        "options": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "answer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Answer"
+        }
+      },
+      "required": [
+        "id",
+        "field",
+        "question"
+      ],
+      "title": "IntakeQuestionRecord",
+      "type": "object"
+    },
+    "IntakeStatus": {
+      "enum": [
+        "awaiting_answers",
+        "ready_for_blueprint",
+        "blueprint_pending",
+        "approved"
+      ],
+      "title": "IntakeStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "raw_input": {
+      "title": "Raw Input",
+      "type": "string"
+    },
+    "extracted_fields": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Extracted Fields",
+      "type": "object"
+    },
+    "confirmed_fields": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Confirmed Fields",
+      "type": "object"
+    },
+    "missing_required": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Missing Required",
+      "type": "array"
+    },
+    "assumptions": {
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          },
+          {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "title": "Assumptions",
+      "type": "object"
+    },
+    "questions_asked": {
+      "items": {
+        "$ref": "#/$defs/IntakeQuestionRecord"
+      },
+      "title": "Questions Asked",
+      "type": "array"
+    },
+    "qa_round": {
+      "default": 0,
+      "maximum": 2,
+      "minimum": 0,
+      "title": "Qa Round",
+      "type": "integer"
+    },
+    "status": {
+      "$ref": "#/$defs/IntakeStatus",
+      "default": "awaiting_answers"
+    },
+    "next_action": {
+      "default": "ask_intake_questions",
+      "title": "Next Action",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "raw_input"
+  ],
+  "title": "IntakeState",
+  "type": "object"
+}

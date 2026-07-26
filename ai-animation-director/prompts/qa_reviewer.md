@@ -11,6 +11,7 @@
 - 用户说“帮我检查”“还能怎么优化”“这个提示词能不能生成”。
 - 用户报告某个 `IMG-*`、`CV-OP-*` 或 `VID-*` 失败。
 - 输出需要从 Standard/Full 压缩到 Quick Mode 前，需要确认哪些风险必须保留给用户。
+- 用户说“提示词不好”“太丑”“画面不对”“视频提示词动崩了”时，优先调用 `prompt_quality_reviewer.md` 做局部提示词修补。
 
 不要用于重新写故事、重排全片、扩展导演阐述或生成完整提示词。发现问题时只做局部补丁。
 
@@ -41,6 +42,8 @@
 检查范围：
 
 - 镜头数量是否符合片长。
+- 单个视频任务是否跨越多个场景、多个镜头或引用多张职责不明的图片；命中时必须 `split_first`。
+- 目标总片长是否超过平台当前可选或实际观察到的单次输出时长；超过时按镜头拆段。
 - 每镜头是否只有一个主要动作和一个主要摄影机动作。
 - 每个 `VID-Sxx` 是否引用对应 `IMG-Sxx`。
 - 角色锚点是否足够短且重复。
@@ -67,6 +70,8 @@
 - `character_drift`
 - `style_drift`
 - `motion_error`
+- `under_motion`
+- `reference_confusion`
 - `camera_error`
 - `deformation`
 - `composition_error`
@@ -75,6 +80,12 @@
 - `generation_blocked`
 - `timeout`
 - `other`
+
+映射补充：
+
+- 只有旋翼、灯光、雨线等辅助运动，主要位移或动作未完成：`under_motion`。
+- 多张不同场景图片放进同一任务后，模型忽略顺序、只采用一张或混合场景：`reference_confusion`。
+- 请求时长与实际文件时长不一致：`duration_mismatch`；可与 `under_motion` 同时记录。
 
 输出应交给 `output_composer` 使用 `templates/failure-diagnosis-card.md`，不要重复完整制作包。
 
@@ -88,6 +99,24 @@
 - 镜头顺序是否能看懂动作因果。
 
 如果缺少实际图片或视频，只能做文本层面的风险判断，并说明“未检查真实画面”。
+
+用户提供真实视频时，读取 `prompts/video_result_reviewer.md`。先核对实际时长和抽样画面，再决定 `pass / retry / split_first`；不要只根据原提示词推测成片质量。
+
+### 5. `prompt_quality_review`
+
+用于用户要求优化提示词，或最终交付前需要检查生图/视频复制块。若 `prompts/prompt_quality_reviewer.md` 存在，优先读取该模块并使用它的评分维度。
+
+检查范围：
+
+- 生图提示词是否缺主体、空间层次、色彩、光影、材质或风格转译。
+- 视频提示词是否缺 `IMG-Sxx` 引用、唯一主体动作、唯一摄影机动作、不动项、环境微动和失败降级。
+- 像素风是否误导成廉价大头 RPG 感；若项目需要场景感，优先修成像素电影感场景、横版冒险或像素绘本动画。
+
+输出要求：
+
+- 通过时只写 `go` 和最多 3 条保留风险。
+- 不通过时只输出受影响 `IMG-*` 或 `VID-*` 的替换提示词。
+- Quick Mode 不展示完整评分表，只把最高风险压缩进失败修正。
 
 ## 输出规则
 
@@ -124,7 +153,7 @@
 
 ```yaml
 qa_notes:
-  mode: preflight_check | prompt_patch | failure_repair | continuity_review
+  mode: preflight_check | prompt_patch | failure_repair | continuity_review | prompt_quality_review
   decision: go | fix_first | split_first | retry | wait
   highest_risk_step: IMG-Sxx | VID-Sxx | CV-OP-xx | none
 risk_register:
@@ -135,6 +164,17 @@ risk_register:
 execution_state:
   failed_step: ...
   failure_type: ...
+  video_execution:
+    generation_strategy: single_image_per_shot | first_last_frame | multi_reference_single_scene
+    requested_duration_seconds: ...
+    actual_duration_seconds: ...
+    reference_count: ...
+  shot_tasks:
+    VID-Sxx:
+      source_image: IMG-Sxx
+      requested_duration_seconds: ...
+      actual_duration_seconds: ...
+      retry_count: ...
   next_action: ...
 handoff_notes:
   to_output_composer: ...

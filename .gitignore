@@ -20,17 +20,34 @@ ai-animation-director/outputs/**
 *.wav
 *.mp3
 
+# Public website media generated from approved original assets
+!site/public/media/
+!site/public/media/*.mp4
+!site/public/media/*.webp
+site/public/media/hero-prototype.mp4
+
 # Local scratch output
 pixel_ai_animation_package_jimeng.md
+workspace-data/
+projects/
+tmp/
 
 # Python
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.pytest-tmp/
 .mypy_cache/
+*.egg-info/
 
 # OS/editor
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+
+# Website toolchain
+site/node_modules/
+site/dist/
+site/playwright-report/
+site/test-results/

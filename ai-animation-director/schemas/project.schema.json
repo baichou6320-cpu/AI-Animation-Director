@@ -1,0 +1,297 @@
+{
+  "$defs": {
+    "ApprovalStatus": {
+      "enum": [
+        "not_started",
+        "pending",
+        "approved",
+        "revision_requested",
+        "bypassed"
+      ],
+      "title": "ApprovalStatus",
+      "type": "string"
+    },
+    "InteractionPolicy": {
+      "enum": [
+        "single_confirm",
+        "strict_review",
+        "direct_run"
+      ],
+      "title": "InteractionPolicy",
+      "type": "string"
+    },
+    "ProjectConstraints": {
+      "additionalProperties": false,
+      "properties": {
+        "core_idea": {
+          "default": "",
+          "title": "Core Idea",
+          "type": "string"
+        },
+        "video_type": {
+          "default": "",
+          "title": "Video Type",
+          "type": "string"
+        },
+        "purpose": {
+          "default": "",
+          "title": "Purpose",
+          "type": "string"
+        },
+        "duration_seconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Seconds"
+        },
+        "aspect_ratio": {
+          "default": "",
+          "title": "Aspect Ratio",
+          "type": "string"
+        },
+        "shot_count": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shot Count"
+        },
+        "emotional_target": {
+          "default": "",
+          "title": "Emotional Target",
+          "type": "string"
+        },
+        "visual_style": {
+          "default": "",
+          "title": "Visual Style",
+          "type": "string"
+        },
+        "platform": {
+          "default": "jimeng",
+          "title": "Platform",
+          "type": "string"
+        },
+        "deliverable": {
+          "default": "jimeng_quick_package",
+          "title": "Deliverable",
+          "type": "string"
+        },
+        "delivery_profile": {
+          "default": "animation_short",
+          "title": "Delivery Profile",
+          "type": "string"
+        },
+        "has_visual_references": {
+          "default": false,
+          "title": "Has Visual References",
+          "type": "boolean"
+        },
+        "language": {
+          "default": "zh-CN",
+          "title": "Language",
+          "type": "string"
+        }
+      },
+      "title": "ProjectConstraints",
+      "type": "object"
+    },
+    "ProjectFileIndex": {
+      "additionalProperties": false,
+      "properties": {
+        "intake": {
+          "default": "input/intake.json",
+          "title": "Intake",
+          "type": "string"
+        },
+        "concept": {
+          "default": "creative/concept.json",
+          "title": "Concept",
+          "type": "string"
+        },
+        "style": {
+          "default": "creative/style.json",
+          "title": "Style",
+          "type": "string"
+        },
+        "assets": {
+          "default": "production/assets.json",
+          "title": "Assets",
+          "type": "string"
+        },
+        "shots": {
+          "default": "production/shots.json",
+          "title": "Shots",
+          "type": "string"
+        },
+        "web_background": {
+          "default": "production/web-background.json",
+          "title": "Web Background",
+          "type": "string"
+        },
+        "image_prompts": {
+          "default": "prompts/image-prompts.json",
+          "title": "Image Prompts",
+          "type": "string"
+        },
+        "video_prompts": {
+          "default": "prompts/video-prompts.json",
+          "title": "Video Prompts",
+          "type": "string"
+        },
+        "execution": {
+          "default": "state/execution.json",
+          "title": "Execution",
+          "type": "string"
+        },
+        "reviews": {
+          "default": "state/reviews.json",
+          "title": "Reviews",
+          "type": "string"
+        },
+        "blueprint": {
+          "default": "deliverables/project-blueprint.md",
+          "title": "Blueprint",
+          "type": "string"
+        },
+        "quick_package": {
+          "default": "deliverables/jimeng-quick-package.md",
+          "title": "Quick Package",
+          "type": "string"
+        }
+      },
+      "title": "ProjectFileIndex",
+      "type": "object"
+    },
+    "StructuredApprovalState": {
+      "additionalProperties": false,
+      "properties": {
+        "interaction_policy": {
+          "$ref": "#/$defs/InteractionPolicy",
+          "default": "single_confirm"
+        },
+        "qa_confirmation": {
+          "$ref": "#/$defs/ApprovalStatus",
+          "default": "not_started"
+        },
+        "concept_approval": {
+          "$ref": "#/$defs/ApprovalStatus",
+          "default": "not_started"
+        },
+        "keyframe_approval": {
+          "$ref": "#/$defs/ApprovalStatus",
+          "default": "not_started"
+        },
+        "approval_override": {
+          "default": false,
+          "title": "Approval Override",
+          "type": "boolean"
+        }
+      },
+      "title": "StructuredApprovalState",
+      "type": "object"
+    },
+    "StructuredProjectStatus": {
+      "enum": [
+        "draft",
+        "active",
+        "complete",
+        "archived"
+      ],
+      "title": "StructuredProjectStatus",
+      "type": "string"
+    },
+    "StructuredStage": {
+      "enum": [
+        "intake",
+        "blueprint_review",
+        "concept",
+        "style",
+        "assets",
+        "shots",
+        "image_prompts",
+        "video_prompts",
+        "production",
+        "complete"
+      ],
+      "title": "StructuredStage",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "state_type": {
+      "default": "ai_animation_director_structured_project",
+      "title": "State Type",
+      "type": "string"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/StructuredProjectStatus",
+      "default": "draft"
+    },
+    "current_stage": {
+      "$ref": "#/$defs/StructuredStage",
+      "default": "intake"
+    },
+    "pipeline_mode": {
+      "default": "jimeng_quick",
+      "title": "Pipeline Mode",
+      "type": "string"
+    },
+    "constraints": {
+      "$ref": "#/$defs/ProjectConstraints"
+    },
+    "approvals": {
+      "$ref": "#/$defs/StructuredApprovalState"
+    },
+    "files": {
+      "$ref": "#/$defs/ProjectFileIndex"
+    },
+    "next_action": {
+      "default": "collect_intake_answers",
+      "title": "Next Action",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "updated_at": {
+      "format": "date-time",
+      "title": "Updated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "project_id",
+    "title"
+  ],
+  "title": "StructuredProjectManifest",
+  "type": "object"
+}

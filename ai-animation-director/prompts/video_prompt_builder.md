@@ -27,6 +27,14 @@
 - 用户指定可灵、即梦、海螺、Runway、Pika、Veo、Luma、通义万相等视频模型。
 - 用户需要把静态关键帧变成可执行的视频镜头。
 
+审批前置条件：
+
+- 只有 `approval_state.keyframe_approval` 为 `approved` 或 `bypassed` 时才能使用本模块。
+- `not_started`、`pending` 或 `revision_requested` 时立即停止，返回 Keyframe Review，不得生成 `VID-Sxx`。
+- 只读取 `approved_assets` 中的关键帧；候选图片不能作为已批准视频输入。
+- 检查 `generation_capabilities.video_generation`；可用时调用视频工具，不可用时输出平台复制提示词。
+- 当 `pipeline_mode=pixel_short_mode` 时，额外要求 `animatic_state=approved/bypassed`、同编号关键帧已批准；样片未批准时只允许生成 `sample_shot_id` 对应镜头。
+
 不要在以下情况跳过本模块：
 
 - 用户要求完整制作包。
@@ -47,11 +55,21 @@
 - `sound_plan`
 - `risk_register`
 - `handoff_notes`
+- `approval_state`
+- `generation_capabilities`
+- `approved_assets`
+- `style_dna`
+- `pixel_style_bible`
+- `animatic_state`
+- `motion_contracts`
+- `render_plan`
+- `sample_review`
 
 必要时读取：
 
 - `references/prompt-templates.md`: 使用通用视频提示词结构、连续性约束和避免项。
 - `references/shot-language.md`: 当需要判断摄影机运动和镜头难度时。
+- `references/pixel-animation-production.md`: 当 `pipeline_mode=pixel_short_mode` 时读取 Motion Contract、样片和像素不动项规则。
 
 重点继承：
 
@@ -87,6 +105,16 @@
 
 ## 视频提示词结构
 
+在写任何 `VID-Sxx` 前先执行视频任务预检：
+
+1. 统计本任务包含的场景数、镜头数和参考图数量。
+2. 多张参考图属于不同地点、不同时刻或不同构图时，必须拆成多个 `VID-Sxx`；不得用一条提示词要求平台按图片顺序完成跨场景叙事。
+3. 多图只允许两种用途：同一镜头的角色/场景/道具补充参考，或同一场景的明确首尾帧。每张图必须声明用途。
+4. 比较目标总片长与平台当前可选或实际观察到的单次输出时长。目标更长时按镜头拆段，不能只在提示词里写多个时间段。
+5. 默认 `generation_strategy=single_image_per_shot`；只有明确同场景首尾状态时使用 `first_last_frame`，同镜头补充参考时使用 `multi_reference_single_scene`。
+
+预检命中跨场景多图、一个任务包含多个镜头或目标时长无法由单次任务承载时，返回 `split_first`，先生成独立任务，不继续写跨场景总提示词。
+
 每个镜头按以下顺序组织：
 
 1. Duration：镜头时长。
@@ -99,6 +127,78 @@
 8. Physics：雨、水、风、灯光、布料、重量等物理约束。
 9. Avoid：变形、换脸、换装、快速剪切、额外动作、复杂背景漂移。
 10. Fallback：失败时的降级版本。
+
+每个 `VID-Sxx` 必须明确回答：
+
+- 什么动：唯一主体动作是什么。
+- 什么不动：角色身份、服装/材质、场景布局、道具、光源方向哪些必须保持不变。
+- 镜头怎么动：静止、慢推、轻微横移、轻微跟随，不使用含糊的“电影感运动”。
+- 环境怎么轻微变化：风、云、麦浪、雨、水波、微光只能选一个重点。
+- 失败后怎么降级：删掉主体动作、固定镜头、只保留环境微动或光影变化。
+
+### Motion Contract
+
+视频提示词先写成结构化运动合同，再压缩成复制文本。字符数不是质量指标；状态明确、动作可验证、失败可降级才是通过标准。
+
+当 `delivery_profile=website_background` 时，使用 Website Motion Contract：
+
+- 使用唯一批准关键帧 `IMG-WEB-HERO`。
+- `allowed_motion` 只保留 2-4 个低复杂度环境运动。
+- `camera_motion` 只能是一个连续、单向、克制的运动，或固定摄影机。
+- `locked_elements` 必须包含主体结构、地形/建筑、光源方向、主视觉位置和 `text_safe_zone`。
+- `scroll_scrub` 项目的任意时间点都必须完整可读；不要依赖对白、音乐节拍、爆炸、破坏或主体进出画面等不可逆事件。
+- 固定 `audio=false`，不输出声音设计。
+- 避免切镜、转场、新主体、强闪烁、快速变焦、结构变形、文字、Logo、水印和签名。
+- 降级版固定摄影机，只保留一种环境微动与非常轻微的光影变化。
+
+```yaml
+motion_contract:
+  id: VID-Sxx
+  source: IMG-Sxx
+  duration_seconds: 4
+  start_state: ""
+  end_state: ""
+  subject_motion: ""
+  camera_motion: ""
+  environment_motion: ""
+  invariants: []
+  avoid: []
+  fallback: ""
+```
+
+字段规则：
+
+- `start_state` 和 `end_state` 必须是可从画面判断的状态，不写抽象情绪。
+- `subject_motion` 只写一个动作链，明确方向、幅度和完成结果。
+- `camera_motion` 只选固定、慢推、轻微横移或轻微跟随之一。
+- `environment_motion` 最多一个重点。
+- `invariants` 必须包含构图、主体轮廓、关键道具、主光方向；像素项目还包含像素尺寸和调色板。
+- `fallback` 删除最高风险动作，保留故事仍能成立的最小变化。
+
+### Copy-Ready Motion Pattern
+
+已有批准关键帧时，参考图负责构图、主体、光影和风格，文本只说明变化。复制提示词通常写成 1-3 句自然语言，不重复长篇静态外观：
+
+```text
+以 `IMG-Sxx` 为唯一首帧。开始时[起始状态]；在[时长]内，[主体完成一个动作]，最终[结束状态]。摄影机[唯一运动]，[唯一环境微动]；构图、主体轮廓、关键道具、像素尺寸、调色板和主光方向保持不变，避免变形、场景跳变、额外动作和文字水印。
+```
+
+像素风优先使用眨眼、一次抬头、光影渐变、雨滴、麦浪/云层/树叶轻微移动或横向视差。不要把“保持像素风”当成运动描述，也不要要求复杂肢体动画。
+
+## 运动配方
+
+优先从下面配方中选择一种，避免一个镜头混合多种复杂运动：
+
+- 静态氛围循环：主体基本不动，只让光、雨、云、树叶、水面或微尘轻微变化。
+- 缓慢推近：摄影机极慢靠近主体，主体只做一个微动作。
+- 横向视差移动：镜头轻微横移，前景、中景、背景形成层次，主体动作保持简单。
+- 角色微动作：眨眼、抬头、回头、伸手、轻点头，只选一个。
+- 光效渐变：萤光、夕阳、窗光、路灯或产品光逐渐变亮/变暗。
+- 产品 hero shot：产品保持中心可读，镜头慢推或轻微环绕，背景不能抢主体。
+
+像素风视频默认使用静态氛围循环、横向视差移动、角色微动作或光效渐变。避免复杂肢体动画、奔跑打斗、快速旋转镜头和大幅透视变化。
+
+温馨异世界日常视频默认使用低动作复杂度：醒来、开窗、倒茶、蒸汽上升、窗帘轻动、草叶摆动、云海漂移、光线变亮、微笑停顿。每个镜头只选一个人物动作和一个环境微动，不要同时写走路、做饭、转身、说话和镜头大幅运动。
 
 ## 文生视频 / 图生视频 / 首尾帧视频规则
 
@@ -180,8 +280,15 @@
 本模块必须更新 `Project Packet`，重点补充或修正：
 
 - `prompt_assets`
+- `motion_contracts`
+- `render_plan`
+- `sample_review`
+- `execution_state.video_execution`: `generation_strategy`、`requested_duration_seconds`、`actual_duration_seconds`、`reference_count`。
+- `execution_state.shot_tasks`: 每个 `VID-Sxx` 的唯一 `source_image`、请求/实际时长和 `retry_count`。
 - `risk_register`
 - `handoff_notes`
+
+像素成片项目的每次视频尝试还要记录 `phase=video`、平台参数、素材路径、失败标签、`motion_completion/temporal_stability/camera_control/continuity` 四项 1-5 评分和选用理由。任一项低于 4 不得批准；最难镜头样片未批准时不得批量输出其他 `VID-Sxx`。
 
 当存在 `canvas_plan` 时：
 
@@ -237,6 +344,7 @@
 ### 6. Handoff Notes
 - 给平台适配模块：
 - 给声音模块：
+- 给 Prompt QA 模块：
 - 给 QA 模块：
 ```
 
@@ -257,6 +365,7 @@
 
 - 给平台适配模块：说明哪些镜头适合图生视频、文生视频、首尾帧视频，以及是否需要中英双语版本。
 - 给声音模块：说明每镜头哪些动作、物件或环境需要声音配合。
+- 给 Prompt QA 模块：说明哪些 `VID-*` 动作过载、镜头过猛、主体不稳定、没有明确不动项，或没有引用对应 `IMG-Sxx`。
 - 给 QA 模块：说明哪些镜头最可能出现角色漂移、动作过载、场景跳变、反光混乱或主体不可读。
 
 ## 示例
@@ -366,3 +475,5 @@ Duration: 6 seconds. Start from the provided final keyframe of the small robot u
 - `赛博朋克产品广告`: 应让产品保持可读，镜头运动服务产品展示，不让霓虹和人群抢主体。
 - `国风水墨离别`: 应使用慢速横移、静态留白、衣摆/水波/墨迹轻动，避免复杂人物动作。
 - `逐镜头视频提示词`: 应为每个镜头生成推荐方式、视频提示词、连续性要求、避免项和失败降级版。
+- `三张不同场景图片，30 秒，即梦`: 必须拆成三个独立 `VID-Sxx`，不得生成一条多图跨场景提示词。
+- `角色图 + 同场景背景图`: 可使用 `multi_reference_single_scene`，但必须声明每张参考图用途。

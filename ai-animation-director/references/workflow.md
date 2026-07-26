@@ -20,6 +20,8 @@
 
 从一个想法到最后成片，内部按这条路径推进。完整制作包必须覆盖全部阶段；局部任务可以只执行相关阶段。默认交付时不要把这条路径完整展开给用户，除非用户要求完整制作包或团队交接。
 
+默认会话节奏：`主题输入 -> 智能联网研究 -> 故事/风格提案 -> Concept Approval -> 关键帧生产 -> Keyframe Approval -> 视频生产 -> 成片质检`。
+
 ### 1. Idea Capture / 创意捕捉
 
 目标：把一句想法变成可判断、可推进的创意输入。
@@ -46,6 +48,12 @@
 
 - 项目简报、logline、故事梗概、三幕式或起承转合结构、情绪曲线。
 - 如果是广告片，补充产品卖点、受众、转化目标和品牌语气。
+
+进入正式创意开发前，按需使用：
+
+- `prompts/creative_research_builder.md`：历史、现实、陌生题材、同类参考或强审美项目先研究。
+- `prompts/concept_pitch_builder.md`：输出 2-3 个方向和推荐方案。
+- `prompts/approval_gate_manager.md`：等待 `concept_approval=approved`；未批准时禁止关键帧生产。
 
 ### 3. Director Treatment / 导演方案
 
@@ -105,6 +113,8 @@
 ### 7. Motion Production / 视频镜头生产
 
 目标：把通过关键帧或画布导出的静态画面转成可生成的视频运动设计。
+
+进入本阶段前必须由 `approval_gate_manager` 确认 `keyframe_approval=approved/bypassed`。未确认时只输出关键帧检查和返修卡，不生成视频提示词。
 
 使用模块：
 

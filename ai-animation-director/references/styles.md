@@ -20,6 +20,36 @@ For each style, define:
 - Prompt anchors: `warm hand-drawn animated short film look`, `painted background`, `soft natural light`, `gentle expressive character acting`, `storybook atmosphere`.
 - Avoid: naming a specific studio as a replication target; overly glossy 3D surfaces.
 
+## Famous Animation Reference Translation
+
+When a user asks for a style similar to a living director, a specific studio, or a protected film world, do not put the name into copy-ready prompts as the main style instruction. Translate it into neutral visible traits, then continue.
+
+Use this pattern:
+
+- User reference: `[director/studio/work] 类似的温馨幻想动画`
+- Safe style translation: `warm hand-painted fantasy animation, soft watercolor-like backgrounds, natural morning light, cozy everyday props, simple expressive faces, low-contrast shadows, slow slice-of-life camera rhythm`
+- Explain briefly when useful: `风格已转译为温暖手绘幻想动画，不直接复刻具体作品、角色或专有画面。`
+
+Do not over-police the user. A short translation note is enough; the useful part is the copy-ready prompt.
+
+## Warm Isekai Morning
+
+- Visual language: cozy hill cottage or small room, round windows, handmade wood and linen materials, cream walls, moss green plants, golden morning light, light fantasy objects that feel domestic rather than spectacular.
+- Camera language: stable medium shots, slow push-ins, gentle window reveals, tabletop closeups, quiet establishing shots.
+- Animation language: waking up, opening curtains, steam rising, fabric moving in a breeze, plants glowing softly, clouds drifting, small satisfied expressions.
+- Prompt anchors: `warm hand-painted fantasy morning`, `cozy otherworld cottage`, `golden morning light`, `watercolor texture`, `gentle slice-of-life animation`, `soft natural shadows`.
+- Avoid: overpowered magic effects, crowded fantasy creatures, modern city props, neon cyberpunk lighting, direct studio or director imitation.
+
+## Aesthetic Scene Presets
+
+Use these when the user has a mood but no concrete scene. Offer them as optional defaults or choose one when `direct_assumption_mode=true`.
+
+- `forest_cottage`: green forest cottage, flowers, moss roof, clean summer sky, warm fairy-tale calm.
+- `sunset_wheat_field`: golden wheat, long shadows, low wind, simple path, quiet emotional closure.
+- `sky_island_morning`: small cottage above clouds, floating garden, bright sky, airy peaceful morning.
+- `seaside_town_breakfast`: white walls, blue morning sea, linen curtains, breakfast table, gentle coastal wind.
+- `cozy_kitchen_magic`: wooden kitchen, kettle steam, small glowing herbs, handmade ceramics, morning light through round window.
+
 ## Cyberpunk Neon
 
 - Visual language: high contrast, wet streets, saturated neon, holographic signage, dense urban layers, reflective materials.

@@ -1,0 +1,52 @@
+{
+  "project": {
+    "title": "雨后萤火虫",
+    "platform": "jimeng",
+    "aspect_ratio": "9:16",
+    "notes": "用于演示 AI 动画生产工作台的三镜头竖屏短片。"
+  },
+  "tasks": [
+    {
+      "id": "img_shot_001",
+      "type": "image",
+      "prompt": "雨后森林，小蘑菇发现一只微弱发光的萤火虫，竖屏动画关键帧。",
+      "negative_prompt": "文字，水印，角色变形",
+      "notes": "建立角色与环境。"
+    },
+    {
+      "id": "vid_shot_001",
+      "type": "video_image",
+      "prompt": "小蘑菇缓慢抬头，萤火虫尾灯轻微闪烁，镜头固定。",
+      "duration_hint": "3s",
+      "notes": "开场镜头。"
+    },
+    {
+      "id": "img_shot_002",
+      "type": "image",
+      "prompt": "小蘑菇双手托起一滴露水，萤火虫靠近，保持角色外观一致。",
+      "negative_prompt": "文字，水印，服装变化",
+      "notes": "动作承接。"
+    },
+    {
+      "id": "vid_shot_002",
+      "type": "video_image",
+      "prompt": "萤火虫缓慢靠近露水，尾灯逐渐变亮，镜头轻微推进。",
+      "duration_hint": "3s",
+      "notes": "中间镜头。"
+    },
+    {
+      "id": "img_shot_003",
+      "type": "image",
+      "prompt": "温暖光芒照亮森林，小蘑菇和萤火虫位于画面中央，竖屏构图。",
+      "negative_prompt": "文字，水印，角色漂移",
+      "notes": "结尾画面。"
+    },
+    {
+      "id": "vid_shot_003",
+      "type": "video_image",
+      "prompt": "萤火虫恢复明亮光芒，小蘑菇眨眼，森林被暖光照亮。",
+      "duration_hint": "4s",
+      "notes": "结尾镜头。"
+    }
+  ]
+}

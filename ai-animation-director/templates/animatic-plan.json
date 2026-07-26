@@ -1,0 +1,50 @@
+{
+  "state_type": "ai_animation_director_animatic_plan",
+  "version": 1,
+  "project_title": "露水小灯",
+  "target_duration_seconds": 15,
+  "status": "pending",
+  "output_path": "outputs/animatic.mp4",
+  "temporary_audio_path": "",
+  "shots": [
+    {
+      "shot_id": "S01",
+      "storyboard_id": "SB-S01",
+      "image_path": "assets/storyboard/S01.png",
+      "duration_seconds": 4,
+      "transition": "hard_cut",
+      "audio_cue": "雨后森林环境声"
+    },
+    {
+      "shot_id": "S02",
+      "storyboard_id": "SB-S02",
+      "image_path": "assets/storyboard/S02.png",
+      "duration_seconds": 3,
+      "transition": "hard_cut",
+      "audio_cue": "露水轻响"
+    },
+    {
+      "shot_id": "S03",
+      "storyboard_id": "SB-S03",
+      "image_path": "assets/storyboard/S03.png",
+      "duration_seconds": 4,
+      "transition": "hard_cut",
+      "audio_cue": "萤光恢复的轻柔提示音"
+    },
+    {
+      "shot_id": "S04",
+      "storyboard_id": "SB-S04",
+      "image_path": "assets/storyboard/S04.png",
+      "duration_seconds": 4,
+      "transition": "fade_out",
+      "audio_cue": "森林环境声与一个收束音"
+    }
+  ],
+  "review": {
+    "story_clarity": null,
+    "pacing": null,
+    "composition": null,
+    "continuity": null
+  },
+  "next_action": "review_animatic"
+}

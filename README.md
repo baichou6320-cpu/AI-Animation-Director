@@ -4,8 +4,8 @@
 
 ### Turn one animation idea into a production-ready AI video prompt package
 
-Director treatment, story structure, character consistency, shot design, smart canvas planning,
-video prompts, Jimeng adaptation, and production QA in one composable Codex Skill.
+Director treatment, character consistency, animatics, smart canvas planning, Motion Contracts,
+pixel finishing, and final-film QA in one composable Codex Skill.
 
 [![Release](https://img.shields.io/github/v/release/baichou6320-cpu/AI-Animation-Director?style=flat-square&color=2f81f7)](https://github.com/baichou6320-cpu/AI-Animation-Director/releases)
 [![Validation](https://img.shields.io/github/actions/workflow/status/baichou6320-cpu/AI-Animation-Director/validate.yml?branch=main&style=flat-square&label=validation)](https://github.com/baichou6320-cpu/AI-Animation-Director/actions/workflows/validate.yml)
@@ -36,7 +36,7 @@ Instead of returning one overloaded prompt, it works like a small virtual animat
 The internal process can be detailed. The user-facing result stays compact, copyable, and ready to test.
 
 > [!IMPORTANT]
-> Version `v0.1.x` is primarily a **prompt and production-planning Skill**. It does not generate media by itself. The Jimeng-compatible API runner is experimental and requires provider-specific credentials and endpoint details.
+> The project does not generate Jimeng AI images or videos for you. It can now build local animatics, normalize pixel footage, assemble a final master, and track approvals. AI assets are still generated manually; the Jimeng-compatible API runner remains experimental.
 
 ## Why this project?
 
@@ -49,6 +49,8 @@ AI video projects often fail even when individual prompts look good.
 | "Cinematic" or "premium" is too vague | Translates adjectives into framing, palette, lighting, material, and pacing rules |
 | Image and video prompts do not connect | Pairs every `VID-Sxx` block with a corresponding `IMG-Sxx` keyframe |
 | The output is too long to use | Routes short projects into Quick Mode or Prompts Only |
+| Editing reveals pacing problems too late | Requires an approved animatic before formal generation |
+| Pixel size, palette, or frame cadence jumps | Locks a native canvas, global palette, 12 fps motion, and integer nearest-neighbor scaling |
 | A model cannot execute the intended motion | Adds difficulty labels and a simpler fallback for each risky shot |
 | Style references are too derivative | Converts references into generic visual traits instead of copying protected styles |
 
@@ -62,24 +64,43 @@ Depending on the request, the Skill can produce:
 - character and environment consistency anchors;
 - shot list with duration, framing, camera movement, action, transition, and difficulty;
 - keyframe and reference-image prompts;
+- timed animatics with temporary sound;
 - Jimeng Smart Canvas asset, layout, blend, inpaint, expand, and keyframe export plans;
 - image-to-video or text-to-video prompts;
 - Jimeng-oriented copy blocks;
 - lightweight music, ambience, and sound-effect direction;
 - production risks, fallback shots, and final QA checks.
+- optional local pixel finishing, assembly, and final-master tracking.
 
-### Five output modes
+### One confirmation, then continuous production
+
+New projects ask one structured QA round with 1-3 high-impact questions. After the user replies, the Skill fills non-critical defaults and builds the complete execution package:
+
+```text
+Theme -> one QA confirmation -> research and creative blueprint
+      -> art direction -> shots and image prompts -> video prompts
+      -> generation order -> failure repair -> post and final QA
+```
+
+The default policy is `single_confirm`. Use `strict_review` only when you explicitly want stage-by-stage approval, or `direct_run` when you want the Skill to skip questions and use assumptions.
+
+### Output modes
 
 | Mode | Best for | Visible output |
 | --- | --- | --- |
 | **Prompts Only** | "Just give me Jimeng prompts" | Global anchors, canvas asset prompts, video prompts, critical fixes |
 | **Continue Mode** | Production has started; report success or failure | Current state, one next action, prompt, and checks |
+| **Concept Review** | Strict review only: research and direction are ready | Research brief, 2-3 directions, recommendation, approval request |
+| **Keyframe Review** | Strict review only: images are ready but video has not started | Candidate references/keyframes, checks, approval or local revision |
+| **Pixel Short Mode** | A finished, reviewable pixel short | Hero frame, animatic, staged versions, pixel finishing, and master review |
 | **Quick Mode** | 5-30 seconds, usually 3-6 shots | Anchors, asset preparation, per-shot execution cards |
 | **Standard Mode** | 30-90 second shorts | Brief, concise treatment, story, bible anchors, full shot prompts |
 | **Full Mode** | Complete package or team handoff | Full pre-production package with handoff notes and QA |
 
-For Jimeng shorts under 30 seconds and 6 shots, **Quick Mode is the default**.
+For new projects, the first QA reply opens the target Quick, Standard, or Full production format immediately. Concept Review and Keyframe Review are opt-in strict-review routes. `Prompts Only`, Continue, Revision, and Failure Repair remain direct routes.
 Once production starts, reply with messages such as "`IMG-S01` exported, continue" or "`VID-S02` failed" to receive only the next action.
+
+For a finished pixel short, the baseline is `15 seconds / 4 shots / 16:9 / Jimeng + local post`: approve `REF-HERO`, approve the animatic, render the hardest shot first, then normalize all clips to `320x180 / 12 fps / 48 colors` and scale them to `1920x1080 / 24 fps` with nearest-neighbor sampling.
 
 ## Quick start
 
@@ -139,6 +160,36 @@ VID-S02  -> animate IMG-S02
 ```
 
 The stable IDs make it obvious which image belongs to which video prompt. Report a completed ID to enter Continue Mode.
+
+## Project website
+
+The repository includes a complete Vite + TypeScript introduction site in [`site/`](site/). Its first screen is a full-bleed environmental film: scrolling down moves the video forward, while scrolling up moves it backward. The controller maps absolute section progress to `video.currentTime`, so it does not hijack the wheel, fake a negative playback rate, or drift after a direction change.
+
+After GitHub Pages is enabled for the repository, the production site is published at:
+
+**[baichou6320-cpu.github.io/AI-Animation-Director](https://baichou6320-cpu.github.io/AI-Animation-Director/)**
+
+Run it locally:
+
+```bash
+cd site
+npm install
+npm run dev
+```
+
+Prepare a website-safe background bundle from an approved image or video:
+
+```bash
+python -m production_workspace prepare-web-background \
+  path/to/approved-source.png \
+  --output-directory site/public/media \
+  --duration 10.1 \
+  --prefix hero
+```
+
+This produces a silent H.264 desktop video, a separately composed mobile video, and a WebP poster. The page reads the real media duration and falls back to the poster for reduced-motion users or failed video loading. Local experiments may use `hero-prototype.mp4`; that file is intentionally excluded from Git and never becomes the public source.
+
+The matching Skill route is `pipeline_mode=short_form` with `delivery_profile=website_background`. It adds a text-safe zone, locked composition, restrained environmental motion, separate desktop/mobile assets, and release-readiness checks without creating another top-level pipeline.
 
 ## Example output
 
@@ -203,6 +254,8 @@ VID-S02 failed; the character drifted and the dew drop changed shape.
 
 The Skill will switch to a failure diagnosis card with the failure type, likely cause, repair strategy, retry prompt, and state update.
 
+When a generated video is attached, the Skill checks actual duration and visible motion before rewriting prompts. Keyframes from different scenes are split into independent `IMG-Sxx -> VID-Sxx` tasks and joined during editing; multi-image input is reserved for supplemental references within one shot or a same-scene first/last-frame pair.
+
 See the complete, final-format examples:
 
 - [10-second pixel-art Jimeng package](ai-animation-director/examples/pixel-10s-3shots-jimeng.md)
@@ -212,6 +265,9 @@ See the complete, final-format examples:
 - [Retry one failed video step](ai-animation-director/examples/continue-after-video-failure.md)
 - [Save a pixel project state](ai-animation-director/examples/state-save-pixel-project.md)
 - [Diagnose character drift](ai-animation-director/examples/failure-diagnosis-character-drift.md)
+- [Retry an under-moving 30-second sci-fi drone short](ai-animation-director/examples/video-retry-scifi-drone-30s.md)
+- [Strict review: research-backed concept approval](ai-animation-director/examples/progressive-concept-review-historical.md)
+- [Strict review: keyframe approval before video](ai-animation-director/examples/progressive-keyframe-review.md)
 
 ## Production workflow
 
@@ -219,19 +275,14 @@ The Skill follows a real animation pre-production path, while using a shared `Pr
 
 ```mermaid
 flowchart LR
-    A["Idea / Script / Brief"] --> B["Intake"]
-    B --> C["Project Brief"]
-    C --> D["Director Treatment"]
-    D --> E["Story"]
-    E --> F["Character & Scene Bible"]
-    F --> G["Shot List"]
-    G --> H["Image & Platform Asset Prompts"]
-    H --> I["Jimeng Smart Canvas"]
-    I --> J["Keyframe Exports"]
-    J --> K["Video Prompts"]
-    K --> L["QA Review"]
-    L --> M["Output Router"]
-    M --> N["Copy-ready Package"]
+    A["Theme / Script"] --> B{"One QA confirmation"}
+    B --> C["Research & Creative Blueprint"]
+    C --> D["Assets, Shots & Image Prompts"]
+    D --> E["Video Prompts & Generation Order"]
+    E --> F["Edit, Sound & QA"]
+    F --> G["Final Delivery"]
+    C -. strict_review .-> H{"Concept Review"}
+    D -. strict_review .-> I{"Keyframe Review"}
 ```
 
 Each stage receives upstream constraints and hands explicit requirements to the next stage. A director's camera rules reach the shot list; character anchors reach every image prompt; shot motion limits reach every video prompt.
@@ -259,6 +310,9 @@ AI-Animation-Director/
 | Module | Responsibility |
 | --- | --- |
 | `intake.md` | Extract hard constraints, defaults, assumptions, and open questions |
+| `creative_research_builder.md` | Decide when to browse and build a sourced research brief |
+| `concept_pitch_builder.md` | Present 2-3 story and visual directions for approval |
+| `approval_gate_manager.md` | Enforce concept and keyframe approval gates |
 | `project_brief_builder.md` | Convert an idea into a manageable production brief |
 | `director_treatment_builder.md` | Define emotional intent, camera rules, light, color, and rhythm |
 | `story_builder.md` | Build or adapt a closed short-film narrative |
@@ -268,7 +322,7 @@ AI-Animation-Director/
 | `canvas_workflow_builder.md` | Plan Jimeng canvases, assets, zones, edits, and keyframe exports |
 | `video_prompt_builder.md` | Create motion-focused video prompts |
 | `platform_adapter.md` | Adapt natural-language prompts for Jimeng or other platforms |
-| `quick_package_router.md` | Select Prompts Only, Quick, Standard, or Full mode |
+| `quick_package_router.md` | Select intake, review, production, continuation, or repair modes |
 | `output_composer.md` | Compress internal work into the final deliverable |
 | `sound_builder.md` | Add low-priority music and sound direction |
 
@@ -361,6 +415,15 @@ GitHub Actions runs the same checks on both Ubuntu and Windows.
 - Additional platform guides for verified AI image/video tools.
 
 See the [prioritized improvement backlog](docs/improvement-backlog.md) for issue-ready tasks.
+
+## Local production workspace
+
+The repository now includes an optional local production workspace for tracking
+shot attempts, generated assets, failures, selected versions, and editing
+delivery packages. It imports the existing production manifest and does not
+modify or delete source media.
+
+See the [Chinese production workspace guide](PRODUCTION_WORKSPACE.zh-CN.md).
 
 ## Contributing
 

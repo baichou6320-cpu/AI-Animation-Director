@@ -4,8 +4,8 @@
 
 ### 把一句动画想法，变成真正可执行的 AI 动画制作方案
 
-导演方案、故事结构、角色一致性、分镜设计、智能画布、视频提示词、
-即梦适配与制作质检，整合在一个可组合的 Codex Skill 中。
+导演方案、故事结构、角色一致性、动态分镜、智能画布、Motion Contract、
+像素后期与成片质检，整合在一个可组合的 Codex Skill 中。
 
 [![Release](https://img.shields.io/github/v/release/baichou6320-cpu/AI-Animation-Director?style=flat-square&color=2f81f7)](https://github.com/baichou6320-cpu/AI-Animation-Director/releases)
 [![Validation](https://img.shields.io/github/actions/workflow/status/baichou6320-cpu/AI-Animation-Director/validate.yml?branch=main&style=flat-square&label=validation)](https://github.com/baichou6320-cpu/AI-Animation-Director/actions/workflows/validate.yml)
@@ -36,7 +36,7 @@
 内部可以按照完整影视流程思考，但最终交付给用户的内容会被压缩成简洁、可复制、可试错的执行包。
 
 > [!IMPORTANT]
-> `v0.1.x` 的稳定能力是**提示词生成与动画前期规划**，不会自动生成图片、视频或音乐。仓库中的即梦兼容 API 执行脚本仍处于实验阶段，需要用户提供合法的服务商凭证和接口细节。
+> 本项目不会代替即梦自动生成 AI 图片或视频。它已经可以在本地构建动态分镜、统一像素帧率/调色板/分辨率并拼接最终母版；AI 素材仍由用户在即梦等平台手动生成。即梦兼容 API 执行脚本仍处于实验阶段。
 
 ## 为什么需要它？
 
@@ -49,6 +49,8 @@ AI 视频项目失败，很多时候并不是因为单条提示词写得不好�
 | “电影感”“高级感”太抽象 | 转译为构图、色彩、灯光、材质、景别和节奏规则 |
 | 生图提示词与视频提示词脱节 | 每个 `VID-Sxx` 强制引用对应的 `IMG-Sxx` |
 | 输出太长，不知道先复制什么 | 自动路由到 Quick Mode 或 Prompts Only |
+| 正式出片后才发现节奏不成立 | 在关键帧和视频前先审核 animatic |
+| 像素镜头颗粒、颜色和帧率一直跳 | 使用固定原生画布、全局调色板、12fps 和整数最近邻放大 |
 | 视频模型无法完成复杂运动 | 为高风险镜头提供固定机位、减少动作等降级方案 |
 | 风格参考容易过度模仿 | 把参考转译为通用视觉特征，不直接复刻受保护风格 |
 
@@ -61,25 +63,54 @@ AI 视频项目失败，很多时候并不是因为单条提示词写得不好�
 - 故事结构、动作线、旁白与台词；
 - 角色、场景、道具一致性锚点；
 - 包含时长、景别、机位、运动、转场和难度的镜头表；
+- 具有精确镜头时长和临时声音的 `animatic.mp4`；
 - 角色参考图、场景图和逐镜头关键帧提示词；
 - 即梦智能画布的素材、区域、融合、局部重绘、扩图和关键帧导出计划；
 - 文生视频、图生视频或首尾帧视频提示词；
 - 面向即梦的稳定复制块；
 - 简洁的配乐、环境声和关键音效方向；
 - 风险清单、失败修正和最终制作检查。
+- 可选本地像素后期、镜头拼接和 `final-master.mp4` 交付记录。
 
-### 五种输出模式
+### 默认一次确认后连续执行
+
+新项目默认只进行一轮 1-3 题的结构化 QA。用户回复后，Skill 会补齐非关键默认值并连续生成完整执行包：
+
+```text
+主题 -> 一次 QA 确认 -> 智能研究与创意蓝图
+     -> 美术定调 -> 镜头与关键帧提示词 -> 视频提示词
+     -> 生成顺序 -> 失败修正 -> 后期与成片质检
+```
+
+默认策略为 `single_confirm`。只有明确要求“逐步确认”“每阶段先看”时才启用 `strict_review`；明确说“不要问，直接生成”时使用 `direct_run`。
+
+### 输出模式
 
 | 模式 | 适用场景 | 用户会看到什么 |
 | --- | --- | --- |
 | **Prompts Only** | “只要即梦提示词” | 全局锚点、画布素材提示词、视频提示词、关键修正 |
 | **Continue Mode** | 已开始制作，汇报完成或失败 | 当前状态、唯一下一步、提示词和检查点 |
+| **Concept Review** | 仅严格审核：研究和创意方向已完成 | 研究摘要、2-3 个方向、推荐方案和确认请求 |
+| **Keyframe Review** | 仅严格审核：图片已准备但尚未进入视频 | 候选参考图/关键帧、检查点、确认或局部返修 |
+| **Pixel Short Mode** | 要做出可剪辑、可验收的像素短片 | REF-HERO、animatic、逐镜版本、像素后期和母版验收 |
 | **Quick Mode** | 5-30 秒，通常 3-6 个镜头 | 项目锚点、素材准备、逐镜头执行卡 |
 | **Standard Mode** | 30-90 秒动画短片 | 简报、导演方向、故事、设定锚点、完整镜头提示词 |
 | **Full Mode** | 完整制作包或团队交接 | 全量前期制作文档、模块交接说明和质检 |
 
-对于 **30 秒以内、6 镜以内的即梦短片**，默认进入 Quick Mode。
+新项目回复首次 QA 后会直接进入目标 Quick、Standard 或 Full 生产格式，不再停在 Concept Review 和 Keyframe Review。Prompts Only、Continue、Revision 和 Failure Repair 仍可直接进入。
 开始制作后，可以回复“`IMG-S01` 已导出，继续”或“`VID-S02` 失败”，Skill 会只返回当前下一步。
+
+### 像素成片基准流程
+
+明确说“制作像素动画成片”会进入 `pixel_short_mode`，不会被普通 Quick Mode 吞掉。第一条基准片默认使用 `15 秒 / 4 镜头 / 16:9 / 即梦 + 本地后期`：
+
+```text
+4 个剧情节拍 -> REF-HERO -> Pixel Style Bible -> animatic
+-> 4 张关键帧 -> 最难镜头样片 -> 逐镜视频
+-> 320x180/12fps/48 色统一 -> 6x 最近邻放大 -> final-master.mp4
+```
+
+每轮只给一个下一动作，并附一张短学习卡。故事、节奏、画面一致性和声音任一低于 `4/5`，项目不会被标记为完成。
 
 ## 快速开始
 
@@ -132,6 +163,14 @@ cp -R ./ai-animation-director ~/.codex/skills/ai-animation-director
 不要改写核心剧情，为每个镜头生成首帧和图生视频提示词。
 ```
 
+要跑完整像素成片流程：
+
+```text
+使用 $ai-animation-director，制作一支可以最终交付的像素动画短片。
+按 15 秒、4 镜头、16:9 的专业流水线推进，使用即梦生成素材，
+先做动态分镜和最难镜头样片，每次只告诉我一个下一动作。
+```
+
 ### 4. 按编号执行
 
 ```text
@@ -145,6 +184,36 @@ VID-S02  -> 使用 IMG-S02 做图生视频
 ```
 
 稳定编号让用户不需要在长文档里寻找“下一步到底复制哪一条”。完成一步后直接汇报编号，即可进入 Continue Mode。
+
+## 项目介绍网站
+
+仓库中的 [`site/`](site/) 是一个完整的 Vite + TypeScript 单页网站，也是 `website_background` 交付类型的真实示例。首屏使用全屏环境视频：向下滚动时视频前进，向上滚动时视频回放。控制器把滚动区间的绝对进度直接映射到 `video.currentTime`，不会劫持滚轮，也不会依赖不稳定的负播放速率。
+
+在仓库启用 GitHub Pages 后，正式网站会发布到：
+
+**[baichou6320-cpu.github.io/AI-Animation-Director](https://baichou6320-cpu.github.io/AI-Animation-Director/)**
+
+本地运行：
+
+```bash
+cd site
+npm install
+npm run dev
+```
+
+把已批准的原创图片或视频处理成网页媒体：
+
+```bash
+python -m production_workspace prepare-web-background `
+  path/to/approved-source.png `
+  --output-directory site/public/media `
+  --duration 10.1 `
+  --prefix hero
+```
+
+命令会生成静音 H.264 桌面视频、单独构图的移动视频和 WebP 海报。页面读取媒体真实时长；用户开启“减少动态效果”或视频加载失败时，只显示海报，正文仍然可用。`hero-prototype.mp4` 只用于本地实验，已被 Git 忽略，不会成为线上发布素材。
+
+对应的 Skill 路由仍然是 `pipeline_mode=short_form`，并设置 `delivery_profile=website_background`。它会增加文本安全区、固定构图、克制的环境微动、桌面/移动素材和发布前版权检查，不额外制造新的顶层管线。
 
 ## 输出长什么样？
 
@@ -209,17 +278,23 @@ VID-S02 失败，角色变形，露水也变了
 
 Skill 会进入失败诊断卡，只返回：失败类型、可能原因、修复策略、重试提示词和状态更新。
 
+如果上传的是已经生成的视频，Skill 会先核对实际时长和可见运动。不同场景的多张关键帧不会再合并成一个视频任务：默认按 `IMG-S01 -> VID-S01` 独立生成，再在剪辑阶段拼接。只有同一镜头的补充参考图或同场景首尾帧才允许多图输入。
+
 ## 完整示例
 
 仓库内的样例全部使用最终用户可见格式，不包含内部推理：
 
 - [10 秒像素风即梦执行包](ai-animation-director/examples/pixel-10s-3shots-jimeng.md)
+- [15 秒 4 镜像素成片黄金样片](ai-animation-director/examples/pixel-cinematic-15s-4shots-jimeng.md)
 - [30 秒国风水墨即梦执行包](ai-animation-director/examples/ink-30s-3shots-jimeng.md)
 - [只要即梦提示词](ai-animation-director/examples/prompts-only-jimeng.md)
 - [关键帧导出后的下一步](ai-animation-director/examples/continue-after-img-s01.md)
 - [单个视频步骤失败后重试](ai-animation-director/examples/continue-after-video-failure.md)
 - [保存像素项目状态](ai-animation-director/examples/state-save-pixel-project.md)
 - [角色漂移失败诊断](ai-animation-director/examples/failure-diagnosis-character-drift.md)
+- [30 秒科幻无人机运动不足重试](ai-animation-director/examples/video-retry-scifi-drone-30s.md)
+- [严格审核：带来源的创意提案确认](ai-animation-director/examples/progressive-concept-review-historical.md)
+- [严格审核：进入视频前的关键帧确认](ai-animation-director/examples/progressive-keyframe-review.md)
 
 ## 从想法到成片的路径
 
@@ -227,19 +302,14 @@ Skill 参考真实动画短片的前期生产流程，并通过统一的 `Projec
 
 ```mermaid
 flowchart LR
-    A["想法 / 剧本 / 需求"] --> B["需求整理"]
-    B --> C["项目简报"]
-    C --> D["导演方案"]
-    D --> E["故事结构"]
-    E --> F["角色与场景圣经"]
-    F --> G["分镜镜头表"]
-    G --> H["生图与平台素材提示词"]
-    H --> I["即梦智能画布"]
-    I --> J["关键帧导出"]
-    J --> K["视频提示词"]
-    K --> L["制作质检"]
-    L --> M["输出模式路由"]
-    M --> N["可复制执行包"]
+    A["主题 / 剧本"] --> B{"一次 QA 确认"}
+    B --> C["智能研究与创意蓝图"]
+    C --> D["角色、场景、镜头与图片提示词"]
+    D --> E["视频提示词与生成顺序"]
+    E --> F["剪辑、声音与质检"]
+    F --> G["最终交付"]
+    C -. strict_review .-> H{"概念审核"}
+    D -. strict_review .-> I{"关键帧审核"}
 ```
 
 每个阶段都会接收上游的确定信息，并把明确要求交给下一环节：
@@ -273,6 +343,9 @@ AI-Animation-Director/
 | 模块 | 负责内容 |
 | --- | --- |
 | `intake.md` | 提取硬约束、默认值、假设和待确认问题 |
+| `creative_research_builder.md` | 智能判断是否联网，并生成带来源的研究摘要 |
+| `concept_pitch_builder.md` | 提供 2-3 个故事和视觉方向等待确认 |
+| `approval_gate_manager.md` | 管理概念确认与关键帧确认 |
 | `project_brief_builder.md` | 把想法转化为可管理的制作项目 |
 | `director_treatment_builder.md` | 确定情绪、摄影、色彩、光影和节奏 |
 | `story_builder.md` | 生成或改编闭合的短片故事 |
@@ -281,8 +354,9 @@ AI-Animation-Director/
 | `image_prompt_builder.md` | 生成画布输入素材和关键帧构图提示词 |
 | `canvas_workflow_builder.md` | 组织即梦画布、素材、区域、局部操作与关键帧导出 |
 | `video_prompt_builder.md` | 生成以运动为核心的视频提示词 |
+| `video_result_reviewer.md` | 审核真实成片时长、运动完成度、多图混乱与局部重试 |
 | `platform_adapter.md` | 适配即梦或其他目标平台 |
-| `quick_package_router.md` | 选择 Prompts Only、Quick、Standard 或 Full |
+| `quick_package_router.md` | 选择问答、确认、生产、续接或失败修复模式 |
 | `output_composer.md` | 把内部制作结果压缩成最终交付 |
 | `sound_builder.md` | 添加低优先级的配乐和声音方向 |
 

@@ -2,7 +2,7 @@
 <!-- template: failure-diagnosis-card; delivery_mode: continue; continue_submode: failure_repair -->
 
 失败步骤：`[VID-Sxx / IMG-Sxx / CV-OP-xx]`
-失败类型：`[character_drift | style_drift | motion_error | camera_error | deformation | composition_error | lighting_error | duration_mismatch | generation_blocked | timeout | other]`
+失败类型：`[character_drift | style_drift | motion_error | under_motion | reference_confusion | camera_error | deformation | composition_error | lighting_error | duration_mismatch | generation_blocked | timeout | other]`
 
 ## 可见症状
 - [用户看到的问题 1]
@@ -33,6 +33,7 @@
 {
   "failed_step": "[VID-Sxx]",
   "failure_records": [{"step": "[VID-Sxx]", "type": "[failure_type]", "symptom": "[short symptom]"}],
+  "video_execution": {"generation_strategy": "[single_image_per_shot | first_last_frame | multi_reference_single_scene]", "requested_duration_seconds": null, "actual_duration_seconds": null, "reference_count": 1},
   "next_action": "retry [VID-Sxx]"
 }
 ```

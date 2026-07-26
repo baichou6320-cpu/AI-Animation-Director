@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "ApprovalStatus": {
+      "enum": [
+        "not_started",
+        "pending",
+        "approved",
+        "revision_requested",
+        "bypassed"
+      ],
+      "title": "ApprovalStatus",
+      "type": "string"
+    },
+    "StageReview": {
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "$ref": "#/$defs/StructuredStage"
+        },
+        "status": {
+          "$ref": "#/$defs/ApprovalStatus",
+          "default": "not_started"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "maximum": 10,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "findings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "reviewed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed At"
+        }
+      },
+      "required": [
+        "stage"
+      ],
+      "title": "StageReview",
+      "type": "object"
+    },
+    "StructuredStage": {
+      "enum": [
+        "intake",
+        "blueprint_review",
+        "concept",
+        "style",
+        "assets",
+        "shots",
+        "image_prompts",
+        "video_prompts",
+        "production",
+        "complete"
+      ],
+      "title": "StructuredStage",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "reviews": {
+      "items": {
+        "$ref": "#/$defs/StageReview"
+      },
+      "title": "Reviews",
+      "type": "array"
+    }
+  },
+  "required": [
+    "project_id"
+  ],
+  "title": "StructuredReviewState",
+  "type": "object"
+}

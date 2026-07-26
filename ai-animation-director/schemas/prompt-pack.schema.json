@@ -1,0 +1,186 @@
+{
+  "$defs": {
+    "ArtifactStatus": {
+      "enum": [
+        "not_started",
+        "draft",
+        "pending_review",
+        "approved",
+        "invalidated"
+      ],
+      "title": "ArtifactStatus",
+      "type": "string"
+    },
+    "PromptKind": {
+      "enum": [
+        "image",
+        "video"
+      ],
+      "title": "PromptKind",
+      "type": "string"
+    },
+    "StageHandoff": {
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Decisions",
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "risks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "invalidates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Invalidates",
+          "type": "array"
+        },
+        "next_stage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StructuredStage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StageHandoff",
+      "type": "object"
+    },
+    "StructuredPrompt": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "shot_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Shot Id"
+        },
+        "asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Asset Ids",
+          "type": "array"
+        },
+        "prompt": {
+          "default": "",
+          "title": "Prompt",
+          "type": "string"
+        },
+        "negative_prompt": {
+          "default": "",
+          "title": "Negative Prompt",
+          "type": "string"
+        },
+        "checkpoints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Checkpoints",
+          "type": "array"
+        },
+        "fallback": {
+          "default": "",
+          "title": "Fallback",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/ArtifactStatus",
+          "default": "draft"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "StructuredPrompt",
+      "type": "object"
+    },
+    "StructuredStage": {
+      "enum": [
+        "intake",
+        "blueprint_review",
+        "concept",
+        "style",
+        "assets",
+        "shots",
+        "image_prompts",
+        "video_prompts",
+        "production",
+        "complete"
+      ],
+      "title": "StructuredStage",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/PromptKind"
+    },
+    "status": {
+      "$ref": "#/$defs/ArtifactStatus",
+      "default": "not_started"
+    },
+    "prompts": {
+      "items": {
+        "$ref": "#/$defs/StructuredPrompt"
+      },
+      "title": "Prompts",
+      "type": "array"
+    },
+    "handoff": {
+      "$ref": "#/$defs/StageHandoff"
+    }
+  },
+  "required": [
+    "project_id",
+    "kind"
+  ],
+  "title": "PromptPackArtifact",
+  "type": "object"
+}

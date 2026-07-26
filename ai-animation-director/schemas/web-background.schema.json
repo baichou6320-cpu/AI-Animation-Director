@@ -1,0 +1,195 @@
+{
+  "$defs": {
+    "ArtifactStatus": {
+      "enum": [
+        "not_started",
+        "draft",
+        "pending_review",
+        "approved",
+        "invalidated"
+      ],
+      "title": "ArtifactStatus",
+      "type": "string"
+    },
+    "StageHandoff": {
+      "additionalProperties": false,
+      "properties": {
+        "decisions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Decisions",
+          "type": "array"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "risks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Risks",
+          "type": "array"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "invalidates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Invalidates",
+          "type": "array"
+        },
+        "next_stage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StructuredStage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "StageHandoff",
+      "type": "object"
+    },
+    "StructuredStage": {
+      "enum": [
+        "intake",
+        "blueprint_review",
+        "concept",
+        "style",
+        "assets",
+        "shots",
+        "image_prompts",
+        "video_prompts",
+        "production",
+        "complete"
+      ],
+      "title": "StructuredStage",
+      "type": "string"
+    },
+    "TextSafeZone": {
+      "enum": [
+        "left_center",
+        "right_center",
+        "center",
+        "none"
+      ],
+      "title": "TextSafeZone",
+      "type": "string"
+    },
+    "WebBackgroundInteraction": {
+      "enum": [
+        "scroll_scrub",
+        "ambient_loop",
+        "normal_playback"
+      ],
+      "title": "WebBackgroundInteraction",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "project_id": {
+      "title": "Project Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/ArtifactStatus",
+      "default": "not_started"
+    },
+    "delivery_profile": {
+      "default": "website_background",
+      "title": "Delivery Profile",
+      "type": "string"
+    },
+    "interaction": {
+      "$ref": "#/$defs/WebBackgroundInteraction",
+      "default": "scroll_scrub"
+    },
+    "duration_seconds": {
+      "default": 10.0,
+      "exclusiveMinimum": 0,
+      "title": "Duration Seconds",
+      "type": "number"
+    },
+    "text_safe_zone": {
+      "$ref": "#/$defs/TextSafeZone",
+      "default": "left_center"
+    },
+    "allowed_motion": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Motion",
+      "type": "array"
+    },
+    "locked_elements": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Locked Elements",
+      "type": "array"
+    },
+    "camera_motion": {
+      "default": "single_continuous_slow_push",
+      "title": "Camera Motion",
+      "type": "string"
+    },
+    "audio": {
+      "default": false,
+      "title": "Audio",
+      "type": "boolean"
+    },
+    "source_asset": {
+      "default": "",
+      "title": "Source Asset",
+      "type": "string"
+    },
+    "desktop_asset": {
+      "default": "",
+      "title": "Desktop Asset",
+      "type": "string"
+    },
+    "mobile_asset": {
+      "default": "",
+      "title": "Mobile Asset",
+      "type": "string"
+    },
+    "poster_asset": {
+      "default": "",
+      "title": "Poster Asset",
+      "type": "string"
+    },
+    "public_release_ready": {
+      "default": false,
+      "title": "Public Release Ready",
+      "type": "boolean"
+    },
+    "handoff": {
+      "$ref": "#/$defs/StageHandoff"
+    }
+  },
+  "required": [
+    "project_id"
+  ],
+  "title": "WebBackgroundSpec",
+  "type": "object"
+}
